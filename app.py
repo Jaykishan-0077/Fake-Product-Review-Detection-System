@@ -21,6 +21,12 @@ def get_models():
         'metrics': manager.metrics
     })
 
+@app.route('/ping', methods=['GET'])
+def ping():
+    """Keep-alive health endpoint for UptimeRobot / Cron-Job pings."""
+    return jsonify({'status': 'active', 'message': 'TrustGuard server is awake!'}), 200
+
+
 @app.route('/api/analyze-text', methods=['POST'])
 def analyze_text():
     """Analyze a single review text input."""
