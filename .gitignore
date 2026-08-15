@@ -1,0 +1,18 @@
+# Python & OS
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+.env
+*.log
+
+# User & Playwright Data
+playwright_user_data/
+*.html
+!templates/*.html
+
+# Local Virtual Environments
+venv/
+env/
+.venv/

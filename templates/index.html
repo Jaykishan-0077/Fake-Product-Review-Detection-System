@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flipkart Fake Review Detection System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Background Glow Blobs -->
+    <div class="glow-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Navigation Header -->
+        <header class="navbar">
+            <div class="brand">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>TrustGuard <span class="badge-flipkart">Flipkart Edition</span></h1>
+                    <p>AI-Powered Fake Product Review Analyzer</p>
+                </div>
+            </div>
+
+            <div class="header-controls">
+                <div class="model-select-wrapper">
+                    <label for="modelSelect"><i class="fa-solid fa-microchip"></i> Active Model:</label>
+                    <select id="modelSelect" class="custom-select">
+                        <option value="BiLSTM (Deep Learning)" selected>BiLSTM (Deep Learning) (Acc: 96.4%)</option>
+                        <option value="Linear SVM">Linear SVM (Acc: 95.7%)</option>
+                        <option value="Logistic Regression">Logistic Regression (Acc: 95.0%)</option>
+                        <option value="Naive Bayes">Multinomial Naive Bayes (Acc: 91.0%)</option>
+                    </select>
+
+                </div>
+                <button id="btnModelMetrics" class="btn-secondary" title="View Model Performance">
+                    <i class="fa-solid fa-chart-line"></i> Benchmark
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Section -->
+        <main class="dashboard">
+            <!-- Hero Input Card -->
+            <section class="card input-card">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="bulk-tab">
+                        <i class="fa-solid fa-paste"></i> Paste Real Flipkart Reviews
+                    </button>
+                    <button class="tab-btn" data-tab="url-tab">
+                        <i class="fa-solid fa-link"></i> Flipkart Product Link
+                    </button>
+                    <button class="tab-btn" data-tab="text-tab">
+                        <i class="fa-solid fa-pen-to-square"></i> Single Review Test
+                    </button>
+                </div>
+
+                <!-- Tab 1: Bulk Paste Real Flipkart Reviews -->
+                <div id="bulk-tab" class="tab-content active">
+                    <form id="bulkForm" class="bulk-form">
+                        <div class="form-group">
+                            <label for="bulkText"><i class="fa-solid fa-clipboard-list"></i> Copy & Paste Real Reviews from Flipkart Page:</label>
+                            <textarea id="bulkText" rows="5" placeholder="Paste multiple real reviews directly from your Flipkart page (each line or paragraph is analyzed as a separate review)...&#10;Example:&#10;Good and super cooling, ok for indoor noise and outdoor noise&#10;Very bad quality no cooling at all compressor stopped when you change temperature&#10;Smart AC with good cooling. Excellent AC! Cooling is very fast..." required></textarea>
+                        </div>
+                        <div class="form-actions" style="margin-top: 14px; display: flex; gap: 10px; align-items: center;">
+                            <button type="button" id="btnLoadACSample" class="btn-secondary" style="flex: 1; justify-content: center;">
+                                <i class="fa-solid fa-snowflake"></i> Load Sample
+                            </button>
+                            <button type="submit" id="btnAnalyzeBulk" class="btn-primary" style="flex: 1; justify-content: center;">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Analyze
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tab 2: Flipkart URL Input -->
+                <div id="url-tab" class="tab-content">
+                    <form id="urlForm" class="url-form">
+                        <div class="input-group">
+                            <i class="fa-solid fa-magnifying-glass input-icon"></i>
+                            <input type="url" id="flipkartUrl" placeholder="Paste Flipkart Product URL...">
+                            <button type="submit" id="btnAnalyzeUrl" class="btn-primary">
+                                <span>Inspect</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="preset-links">
+                        <span class="preset-label"><i class="fa-solid fa-bolt"></i> Quick Test Presets:</span>
+                        <div class="preset-pills">
+                            <button class="pill-btn" data-url="https://www.flipkart.com/samsung-bespoke-ai-2026-model-1-5-ton-3-star-split-inverter-wi-fi-energy-saving-voice-control-powerful-cooling-copper-4-way-swing-5-step-convertible-ac-white/p/itm4b299e5ae893d">
+                                <i class="fa-solid fa-snowflake"></i> Samsung AC
+                            </button>
+                            <button class="pill-btn" data-url="https://www.flipkart.com/motorola-g35-5g-leaf-green-128-gb/p/itmdbb3f63908f51">
+                                <i class="fa-solid fa-mobile-screen"></i> Motorola 5G
+                            </button>
+                            <button class="pill-btn" data-url="https://www.flipkart.com/asus-tuf-gaming-f15-core-i5-11th-gen-laptop/p/itm87bfa2410a8d7">
+                                <i class="fa-solid fa-laptop"></i> ASUS Laptop
+                            </button>
+                            <button class="pill-btn" data-url="https://www.flipkart.com/boat-rockerz-450-bluetooth-headset/p/itmfc44d85fa0a78">
+                                <i class="fa-solid fa-headphones"></i> BoAt Headphones
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Manual Single Review Text Input -->
+                <div id="text-tab" class="tab-content">
+                    <form id="textForm" class="text-form">
+                        <div class="form-row">
+                            <div class="form-group flex-1">
+                                <label for="reviewText">Review Text:</label>
+                                <textarea id="reviewText" rows="3" placeholder="Enter custom review text here..."></textarea>
+                            </div>
+                            <div class="form-group rating-group">
+                                <label for="ratingInput">Rating: <span id="ratingVal">5</span> Stars</label>
+                                <input type="range" id="ratingInput" min="1" max="5" value="5" step="1">
+                                <div class="stars-preview" id="starsPreview">
+                                    ★★★★★
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" id="btnAnalyzeText" class="btn-primary" style="width: 100%; justify-content: center;">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Analyze
+                        </button>
+                    </form>
+
+                </div>
+            </section>
+
+            <!-- Loading Spinner -->
+            <div id="loadingOverlay" class="loading-state hidden">
+                <div class="spinner"></div>
+                <h3 id="loadingText">Analyzing reviews with AI model...</h3>
+                <p>Calculating TF-IDF features, metadata indicators, and model probabilities</p>
+            </div>
+
+            <!-- Results Display Section -->
+            <section id="resultsSection" class="results-section hidden">
+                <!-- Header Info -->
+                <div class="results-header card">
+                    <div class="product-info">
+                        <span class="meta-tag"><i class="fa-solid fa-store"></i> Flipkart Product</span>
+                        <h2 id="resProductName">Product Name</h2>
+                        <a id="resProductUrl" href="#" target="_blank" class="product-link">
+                            <i class="fa-solid fa-external-link"></i> View Source
+                        </a>
+                    </div>
+                    <div class="trust-score-container">
+                        <div class="score-ring" id="scoreRing">
+                            <svg viewBox="0 0 36 36" class="circular-chart">
+                                <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <path id="circlePath" class="circle" stroke-dasharray="85, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <text x="18" y="20.35" class="percentage" id="trustScoreValue">85%</text>
+                            </svg>
+                        </div>
+                        <div class="trust-label">
+                            <span class="trust-title">Trust Index</span>
+                            <span class="trust-status" id="trustStatus">Authentic Product</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Overview Grid -->
+                <div class="stats-grid">
+                    <div class="card stat-card">
+                        <div class="stat-icon icon-blue"><i class="fa-solid fa-comments"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="statTotalReviews">0</span>
+                            <span class="stat-label">Total Reviews Analyzed</span>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon icon-green"><i class="fa-solid fa-circle-check"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value text-green" id="statRealCount">0</span>
+                            <span class="stat-label">Real (Original) Reviews</span>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon icon-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value text-red" id="statFakeCount">0</span>
+                            <span class="stat-label">Fake (CG) Reviews</span>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon icon-purple"><i class="fa-solid fa-percent"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="statFakeRatio">0%</span>
+                            <span class="stat-label">Fake Review Rate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Charts Grid -->
+                <div class="charts-grid">
+                    <div class="card chart-card">
+                        <h3><i class="fa-solid fa-chart-pie"></i> Review Authenticity Distribution</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card chart-card">
+                        <h3><i class="fa-solid fa-chart-column"></i> Rating vs. Authenticity</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="barChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Reviews Feed -->
+                <div class="card reviews-feed-card">
+                    <div class="feed-header">
+                        <h3><i class="fa-solid fa-list-check"></i> Analyzed Review Feed</h3>
+                        <div class="feed-filters">
+                            <button class="filter-btn active" data-filter="all">All Reviews (<span id="filterAllCount">0</span>)</button>
+                            <button class="filter-btn filter-real" data-filter="real">Real Only (<span id="filterRealCount">0</span>)</button>
+                            <button class="filter-btn filter-fake" data-filter="fake">Fake Only (<span id="filterFakeCount">0</span>)</button>
+                        </div>
+                    </div>
+
+                    <div id="reviewsList" class="reviews-list">
+                        <!-- Review items populated dynamically via JS -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Benchmark Metrics Modal -->
+    <div id="metricsModal" class="modal hidden">
+        <div class="modal-content card">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-trophy"></i> Model Performance Benchmark</h2>
+                <button class="close-btn" id="btnCloseModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Comparison of model accuracy and F1 score trained on TF-IDF word & character n-grams + review metadata features (40,432 Kaggle Dataset):</p>
+                <table class="metrics-table">
+                    <thead>
+                        <tr>
+                            <th>Model Architecture</th>
+                            <th>Accuracy Score</th>
+                            <th>F1 Score</th>
+                            <th>Features Used</th>
+                        </tr>
+                    </thead>
+                    <tbody id="metricsTbody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main JS File -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
