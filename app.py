@@ -132,8 +132,17 @@ def analyze_url():
     if not any(domain in url_lower for domain in ['flipkart.com', 'flipkart.page.link', 'fkrt.it', 'dl.flipkart.com']):
         return jsonify({
             'status': 'error',
-            'message': 'Invalid URL! You pasted a non-Flipkart link. Please paste a valid Flipkart Product URL (e.g. https://www.flipkart.com/samsung.../p/itm...).'
+            'message': 'Invalid URL! You pasted a non-Flipkart link. Please paste a valid Flipkart Product URL.'
         }), 400
+
+    # Check if URL contains a valid product page identifier
+    is_product_url = any(p in url_lower for p in ['/p/', '/product-reviews/', 'pid=', 'lid=', 'itm'])
+    if not is_product_url:
+        return jsonify({
+            'status': 'error',
+            'message': 'Invalid Flipkart Link! The URL must point to a specific product page containing /p/ or /product-reviews/ (e.g. https://www.flipkart.com/samsung.../p/itm...).'
+        }), 400
+
 
 
     start_time = time.time()
