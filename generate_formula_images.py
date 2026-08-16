@@ -12,29 +12,29 @@ def render_equation_card(eq_title, eq_latex_lines, filename, figsize=(9.5, 1.8),
     fig, ax = plt.subplots(figsize=figsize, dpi=300)
     ax.axis('off')
     
-    # Background card with subtle border
-    fig.patch.set_facecolor('#f8fafc')
-    fig.patch.set_edgecolor('#cbd5e1')
+    # Pure clean white background with black/charcoal border
+    fig.patch.set_facecolor('#ffffff')
+    fig.patch.set_edgecolor('#000000')
     fig.patch.set_linewidth(1.5)
     
-    # Title
+    # Title in pure black
     ax.text(0.5, 0.88, f"[{eq_title}]", fontsize=11, fontweight='bold', 
-            ha='center', va='center', color='#1e3a8a')
+            ha='center', va='center', color='#000000')
     
-    # Formula lines
+    # Formula lines in pure black
     y_pos = 0.45 if len(eq_latex_lines) == 1 else 0.5
     if len(eq_latex_lines) == 1:
-        ax.text(0.5, 0.38, eq_latex_lines[0], fontsize=fontsize, ha='center', va='center', color='#0f172a')
+        ax.text(0.5, 0.38, eq_latex_lines[0], fontsize=fontsize, ha='center', va='center', color='#000000')
     else:
         line_gap = 0.7 / (len(eq_latex_lines))
         for idx, line in enumerate(eq_latex_lines):
             y = 0.72 - idx * line_gap
-            ax.text(0.5, y, line, fontsize=fontsize, ha='center', va='center', color='#0f172a')
+            ax.text(0.5, y, line, fontsize=fontsize, ha='center', va='center', color='#000000')
 
     out_path = os.path.join(formula_dir, filename)
     plt.savefig(out_path, bbox_inches='tight', pad_inches=0.12, dpi=300, facecolor=fig.get_facecolor(), edgecolor=fig.get_edgecolor())
     plt.close()
-    print(f"Rendered: {out_path}")
+    print(f"Rendered Black Theme: {out_path}")
 
 # ==========================================
 # 1. Formula 1: TF-IDF
@@ -113,4 +113,4 @@ render_equation_card(
     fontsize=12.5
 )
 
-print("All 6 formula images generated successfully!")
+print("All formula images updated to Black & White theme successfully!")

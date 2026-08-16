@@ -29,7 +29,7 @@ def add_header_footer(section, header_text="TrustGuard: AI-Powered Flipkart Fake
     r_head.font.name = 'Times New Roman'
     r_head.font.size = Pt(9.5)
     r_head.font.italic = True
-    r_head.font.color.rgb = RGBColor(100, 100, 100)
+    r_head.font.color.rgb = RGBColor(60, 60, 60) # Neutral Dark Charcoal
 
     footer = section.footer
     footer.is_linked_to_previous = False
@@ -39,12 +39,12 @@ def add_header_footer(section, header_text="TrustGuard: AI-Powered Flipkart Fake
     r_foot_label = p_foot.add_run("Page ")
     r_foot_label.font.name = 'Times New Roman'
     r_foot_label.font.size = Pt(10)
-    r_foot_label.font.color.rgb = RGBColor(0, 0, 0)
+    r_foot_label.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
 
     r_foot = p_foot.add_run()
     r_foot.font.name = 'Times New Roman'
     r_foot.font.size = Pt(10)
-    r_foot.font.color.rgb = RGBColor(0, 0, 0)
+    r_foot.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
 
     fldChar1 = OxmlElement('w:fldChar')
     fldChar1.set(qn('w:fldCharType'), 'begin')
@@ -69,19 +69,17 @@ def add_heading_styled(doc, text, level):
     run = p.add_run(text)
     run.font.name = 'Times New Roman'
     run.bold = True
+    run.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
     
     if level == 1:
         p.alignment = WD_ALIGN_PARAGRAPH.LEFT
         run.font.size = Pt(16)
-        run.font.color.rgb = RGBColor(0, 0, 0)
     elif level == 2:
         p.alignment = WD_ALIGN_PARAGRAPH.LEFT
         run.font.size = Pt(14)
-        run.font.color.rgb = RGBColor(0, 0, 0)
     elif level == 3:
         p.alignment = WD_ALIGN_PARAGRAPH.LEFT
         run.font.size = Pt(12)
-        run.font.color.rgb = RGBColor(0, 0, 0)
     return p
 
 def add_body_p(doc, text, bold_prefix=None, space_after=10):
@@ -96,12 +94,12 @@ def add_body_p(doc, text, bold_prefix=None, space_after=10):
         r_pre.font.name = 'Times New Roman'
         r_pre.font.size = Pt(12)
         r_pre.bold = True
-        r_pre.font.color.rgb = RGBColor(0, 0, 0)
+        r_pre.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
         
     r_body = p.add_run(text)
     r_body.font.name = 'Times New Roman'
     r_body.font.size = Pt(12)
-    r_body.font.color.rgb = RGBColor(0, 0, 0)
+    r_body.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
     return p
 
 def add_bullet_p(doc, text, bold_prefix=None):
@@ -116,12 +114,12 @@ def add_bullet_p(doc, text, bold_prefix=None):
         r_pre.font.name = 'Times New Roman'
         r_pre.font.size = Pt(12)
         r_pre.bold = True
-        r_pre.font.color.rgb = RGBColor(0, 0, 0)
+        r_pre.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
         
     r_body = p.add_run(text)
     r_body.font.name = 'Times New Roman'
     r_body.font.size = Pt(12)
-    r_body.font.color.rgb = RGBColor(0, 0, 0)
+    r_body.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
     return p
 
 def add_figure_image(doc, img_filename, caption_text, width_inches=5.8):
@@ -143,9 +141,9 @@ def add_figure_image(doc, img_filename, caption_text, width_inches=5.8):
         r_cap.font.size = Pt(11)
         r_cap.font.bold = True
         r_cap.font.italic = True
-        r_cap.font.color.rgb = RGBColor(50, 50, 50)
+        r_cap.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
 
-def add_formula_image(doc, formula_filename, width_inches=5.5):
+def add_formula_image(doc, formula_filename, width_inches=5.6):
     f_path = os.path.join(FORMULA_DIR, formula_filename)
     if os.path.exists(f_path):
         p = doc.add_paragraph()
@@ -160,11 +158,11 @@ def create_table_styled(doc, headers, rows_data, col_widths=None):
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table.autofit = False
 
-    # Format Header Row
+    # Format Header Row (Neutral Clean Grey & Pure Black Text)
     hdr_cells = table.rows[0].cells
     for i, header_text in enumerate(headers):
         hdr_cells[i].text = header_text
-        set_cell_background(hdr_cells[i], "E8EEF5")
+        set_cell_background(hdr_cells[i], "E5E7EB") # Neutral Academic Light Grey
         set_cell_margins(hdr_cells[i], top=140, bottom=140, left=160, right=160)
         p = hdr_cells[i].paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -173,12 +171,12 @@ def create_table_styled(doc, headers, rows_data, col_widths=None):
             run.font.name = 'Times New Roman'
             run.font.size = Pt(11)
             run.font.bold = True
-            run.font.color.rgb = RGBColor(0, 0, 0)
+            run.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
 
     # Format Data Rows
     for r_idx, row_values in enumerate(rows_data):
         row_cells = table.rows[r_idx+1].cells
-        fill_color = "FBFBFC" if r_idx % 2 == 1 else "FFFFFF"
+        fill_color = "F9FAFB" if r_idx % 2 == 1 else "FFFFFF"
         for c_idx, val in enumerate(row_values):
             row_cells[c_idx].text = str(val)
             set_cell_background(row_cells[c_idx], fill_color)
@@ -189,7 +187,7 @@ def create_table_styled(doc, headers, rows_data, col_widths=None):
             for run in p.runs:
                 run.font.name = 'Times New Roman'
                 run.font.size = Pt(10.5)
-                run.font.color.rgb = RGBColor(0, 0, 0)
+                run.font.color.rgb = RGBColor(0, 0, 0) # Pure Black
 
     if col_widths:
         for row in table.rows:
@@ -199,10 +197,10 @@ def create_table_styled(doc, headers, rows_data, col_widths=None):
     doc.add_paragraph().paragraph_format.space_after = Pt(10)
     return table
 
-def generate_50page_report_with_formula_images():
+def generate_black_theme_report():
     doc = docx.Document()
 
-    # Configure Margins: Left 1.25", Right 1.0", Top 1.0", Bottom 1.0"
+    # Margins: Left 1.25", Right 1.0", Top 1.0", Bottom 1.0"
     sec_cover = doc.sections[0]
     sec_cover.top_margin = Inches(1.0)
     sec_cover.bottom_margin = Inches(1.0)
@@ -211,7 +209,7 @@ def generate_50page_report_with_formula_images():
     sec_cover.different_first_page_header_footer = True
 
     # ==========================================
-    # 1. COVER PAGE (Appendix 1 Format)
+    # 1. COVER PAGE (Appendix 1 Format - Pure Black)
     # ==========================================
     p_title = doc.add_paragraph()
     p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -221,6 +219,7 @@ def generate_50page_report_with_formula_images():
     r.font.name = 'Times New Roman'
     r.font.size = Pt(18)
     r.bold = True
+    r.font.color.rgb = RGBColor(0, 0, 0)
 
     p_sub = doc.add_paragraph()
     p_sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -229,6 +228,7 @@ def generate_50page_report_with_formula_images():
     r.font.name = 'Times New Roman'
     r.font.size = Pt(14)
     r.bold = True
+    r.font.color.rgb = RGBColor(0, 0, 0)
 
     p_course = doc.add_paragraph()
     p_course.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -237,6 +237,7 @@ def generate_50page_report_with_formula_images():
     r.font.name = 'Times New Roman'
     r.font.size = Pt(16)
     r.bold = True
+    r.font.color.rgb = RGBColor(0, 0, 0)
 
     p_by = doc.add_paragraph()
     p_by.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -245,6 +246,7 @@ def generate_50page_report_with_formula_images():
     r.font.name = 'Times New Roman'
     r.font.size = Pt(14)
     r.italic = True
+    r.font.color.rgb = RGBColor(0, 0, 0)
 
     p_cand = doc.add_paragraph()
     p_cand.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -254,11 +256,13 @@ def generate_50page_report_with_formula_images():
     r1.font.name = 'Times New Roman'
     r1.font.size = Pt(16)
     r1.bold = True
+    r1.font.color.rgb = RGBColor(0, 0, 0)
     
     r2 = p_cand.add_run("Maan Kalariya (92301703111)")
     r2.font.name = 'Times New Roman'
     r2.font.size = Pt(16)
     r2.bold = True
+    r2.font.color.rgb = RGBColor(0, 0, 0)
 
     p_deg = doc.add_paragraph()
     p_deg.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -268,16 +272,19 @@ def generate_50page_report_with_formula_images():
     r_deg1.font.name = 'Times New Roman'
     r_deg1.font.size = Pt(16)
     r_deg1.bold = True
+    r_deg1.font.color.rgb = RGBColor(0, 0, 0)
     
     r_deg2 = p_deg.add_run("in\n")
     r_deg2.font.name = 'Times New Roman'
     r_deg2.font.size = Pt(14)
     r_deg2.italic = True
+    r_deg2.font.color.rgb = RGBColor(0, 0, 0)
     
     r_deg3 = p_deg.add_run("Computer Engineering")
     r_deg3.font.name = 'Times New Roman'
     r_deg3.font.size = Pt(16)
     r_deg3.bold = True
+    r_deg3.font.color.rgb = RGBColor(0, 0, 0)
 
     p_inst = doc.add_paragraph()
     p_inst.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -286,10 +293,12 @@ def generate_50page_report_with_formula_images():
     r_inst1.font.name = 'Times New Roman'
     r_inst1.font.size = Pt(16)
     r_inst1.bold = True
+    r_inst1.font.color.rgb = RGBColor(0, 0, 0)
 
     r_date = p_inst.add_run("August, 2026")
     r_date.font.name = 'Times New Roman'
     r_date.font.size = Pt(14)
+    r_date.font.color.rgb = RGBColor(0, 0, 0)
 
     # Main Section
     sec_main = doc.add_section()
@@ -311,6 +320,7 @@ def generate_50page_report_with_formula_images():
     r.font.name = 'Times New Roman'
     r.font.size = Pt(14)
     r.bold = True
+    r.font.color.rgb = RGBColor(0, 0, 0)
 
     p_cert_title = doc.add_paragraph()
     p_cert_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -319,6 +329,7 @@ def generate_50page_report_with_formula_images():
     r_ct.font.name = 'Times New Roman'
     r_ct.font.size = Pt(18)
     r_ct.bold = True
+    r_ct.font.color.rgb = RGBColor(0, 0, 0)
 
     add_body_p(doc, "This is to certify that the project report submitted along with the project entitled \"TrustGuard: AI-Powered Flipkart Fake Review Detection System\" has been carried out by Jaykishan Kalariya (92301703102) and Maan Kalariya (92301703111) under my guidance in partial fulfilment for the degree of Bachelor of Technology in Computer Engineering, 7th Semester of Marwadi University, Rajkot during the academic year 2026-27.", space_after=48)
 
@@ -345,6 +356,7 @@ def generate_50page_report_with_formula_images():
             for run in p.runs:
                 run.font.name = 'Times New Roman'
                 run.font.size = Pt(11)
+                run.font.color.rgb = RGBColor(0, 0, 0)
 
     doc.add_page_break()
 
@@ -359,6 +371,7 @@ def generate_50page_report_with_formula_images():
     r.font.name = 'Times New Roman'
     r.font.size = Pt(14)
     r.bold = True
+    r.font.color.rgb = RGBColor(0, 0, 0)
 
     p_dec_t = doc.add_paragraph()
     p_dec_t.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -367,6 +380,7 @@ def generate_50page_report_with_formula_images():
     r.font.name = 'Times New Roman'
     r.font.size = Pt(18)
     r.bold = True
+    r.font.color.rgb = RGBColor(0, 0, 0)
 
     add_body_p(doc, "We hereby declare that the Major Project – I (01CE0716) report submitted along with the Project entitled \"TrustGuard: AI-Powered Flipkart Fake Review Detection System\" submitted in partial fulfilment for the degree of Bachelor of Technology in Computer Engineering to Marwadi University, Rajkot, is a bonafide record of original project work carried out by us at Marwadi University under the supervision of Prof. Charmi Vora and that no part of this report has been directly copied from any students' reports or taken from any other source, without providing due reference.", space_after=36)
 
@@ -390,6 +404,7 @@ def generate_50page_report_with_formula_images():
             for run in p.runs:
                 run.font.name = 'Times New Roman'
                 run.font.size = Pt(11)
+                run.font.color.rgb = RGBColor(0, 0, 0)
 
     doc.add_page_break()
 
@@ -881,7 +896,7 @@ def generate_50page_report_with_formula_images():
     add_body_p(doc, "[15] Kaggle Datasets. (2023). \"E-Commerce Fake Product Reviews Dataset (CG vs OR).\" Available online: https://www.kaggle.com/")
 
     doc.save("MARWADI_UNIVERSITY_PROJECT_REPORT.docx")
-    print("Successfully generated MARWADI_UNIVERSITY_PROJECT_REPORT.docx with embedded formula images, flowcharts, and screenshots!")
+    print("Successfully generated BLACK THEME MARWADI_UNIVERSITY_PROJECT_REPORT.docx!")
 
 if __name__ == '__main__':
-    generate_50page_report_with_formula_images()
+    generate_black_theme_report()
