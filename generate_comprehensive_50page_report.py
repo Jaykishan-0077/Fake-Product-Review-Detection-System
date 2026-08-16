@@ -1,9 +1,12 @@
+import os
 import docx
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml import OxmlElement, parse_xml
 from docx.oxml.ns import nsdecls, qn
+
+IMG_DIR = "/Users/jk/Desktop/flipkart_fake_review_detector/report_images"
 
 def set_cell_background(cell, fill_hex):
     tcPr = cell._tc.get_or_add_tcPr()
@@ -84,7 +87,7 @@ def add_body_p(doc, text, bold_prefix=None, space_after=10):
     p = doc.add_paragraph()
     p.paragraph_format.space_before = Pt(0)
     p.paragraph_format.space_after = Pt(space_after)
-    p.paragraph_format.line_spacing = 1.5 # Strict 1.5 Line Spacing for College Guidelines
+    p.paragraph_format.line_spacing = 1.5 # Strict 1.5 Line Spacing for Guidelines
     p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     
     if bold_prefix:
@@ -139,6 +142,27 @@ def add_formula_box(doc, formula_title, formula_text):
     r_f.bold = True
     r_f.font.color.rgb = RGBColor(0, 0, 0)
 
+def add_figure_image(doc, img_filename, caption_text, width_inches=5.8):
+    img_path = os.path.join(IMG_DIR, img_filename)
+    if os.path.exists(img_path):
+        p_img = doc.add_paragraph()
+        p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_img.paragraph_format.space_before = Pt(10)
+        p_img.paragraph_format.space_after = Pt(4)
+        run = p_img.add_run()
+        run.add_picture(img_path, width=Inches(width_inches))
+
+        p_cap = doc.add_paragraph()
+        p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_cap.paragraph_format.space_before = Pt(2)
+        p_cap.paragraph_format.space_after = Pt(12)
+        r_cap = p_cap.add_run(caption_text)
+        r_cap.font.name = 'Times New Roman'
+        r_cap.font.size = Pt(11)
+        r_cap.font.bold = True
+        r_cap.font.italic = True
+        r_cap.font.color.rgb = RGBColor(50, 50, 50)
+
 def create_table_styled(doc, headers, rows_data, col_widths=None):
     table = doc.add_table(rows=len(rows_data)+1, cols=len(headers))
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -148,7 +172,7 @@ def create_table_styled(doc, headers, rows_data, col_widths=None):
     hdr_cells = table.rows[0].cells
     for i, header_text in enumerate(headers):
         hdr_cells[i].text = header_text
-        set_cell_background(hdr_cells[i], "E8EEF5") # Clean Professional Subtle Tone
+        set_cell_background(hdr_cells[i], "E8EEF5")
         set_cell_margins(hdr_cells[i], top=140, bottom=140, left=160, right=160)
         p = hdr_cells[i].paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -183,10 +207,10 @@ def create_table_styled(doc, headers, rows_data, col_widths=None):
     doc.add_paragraph().paragraph_format.space_after = Pt(10)
     return table
 
-def generate_50page_report():
+def generate_50page_report_with_images():
     doc = docx.Document()
 
-    # Configure Margins: Left 1.25", Right 1.0", Top 1.0", Bottom 1.0"
+    # Margins: Left 1.25", Right 1.0", Top 1.0", Bottom 1.0"
     sec_cover = doc.sections[0]
     sec_cover.top_margin = Inches(1.0)
     sec_cover.bottom_margin = Inches(1.0)
@@ -275,9 +299,7 @@ def generate_50page_report():
     r_date.font.name = 'Times New Roman'
     r_date.font.size = Pt(14)
 
-    # ==========================================
-    # MAIN REPORT SECTION WITH RUNNING HEADERS
-    # ==========================================
+    # Main Section
     sec_main = doc.add_section()
     sec_main.top_margin = Inches(1.0)
     sec_main.bottom_margin = Inches(1.0)
@@ -519,11 +541,6 @@ def generate_50page_report():
     add_bullet_p(doc, "Dynamic switching between trained models directly from the web header to re-evaluate reviews under different algorithmic decision boundaries.")
     add_bullet_p(doc, "Fluid responsive design adapting seamlessly to desktop monitors, laptops, iPads/tablets, and Android/iOS smartphones.")
 
-    add_body_p(doc, "Out-of-Scope Boundaries:", bold_prefix="1.4.2 Out-of-Scope Boundaries: ")
-    add_bullet_p(doc, "Analysis of non-English regional languages (such as Hindi, Hinglish, or Gujarati) is excluded from the initial release.")
-    add_bullet_p(doc, "Native mobile application packages (.apk for Android or .ipa for iOS) are not included; the system runs as a web application via mobile browsers.")
-    add_bullet_p(doc, "Reviewer account history tracking (such as historical posting frequency or account age) is not captured due to e-commerce privacy constraints.")
-
     add_heading_styled(doc, "1.5 Technology and Literature Review", level=2)
     add_body_p(doc, "Summary of Literature Review and Findings:", bold_prefix="1.5.1 Literature Review: ")
     add_body_p(doc, "Table 1.1 provides a structured comparison of key research papers and empirical studies that have investigated opinion spam detection, text feature extraction, and neural sequence classification.")
@@ -539,51 +556,11 @@ def generate_50page_report():
     ]
     create_table_styled(doc, lit_headers, lit_data, [0.8, 1.5, 1.8, 1.3, 1.1, 2.5])
 
-    add_body_p(doc, "Literature Synthesis & Academic Insights:", bold_prefix="1.5.2 Literature Synthesis: ")
-    add_body_p(doc, "The existing body of research reveals three foundational insights that directly guided TrustGuard's system architecture:")
-    add_bullet_p(doc, "Ott et al. (2011) firmly established that n-gram lexical features paired with maximum-margin hyperplanes (Linear SVM) provide exceptional discriminative power against deceptive text because artificial reviews exhibit subtle syntactic distributional anomalies that human readers overlook.", bold_prefix="Insight 1 (Syntactic Distribution): ")
-    add_bullet_p(doc, "Crawford et al. (2015) confirmed that stylistic metadata attributes—such as the ratio of capitalized words, exclamation mark density, review length, and vocabulary uniqueness—serve as highly reliable behavioral proxies for promotional spam.", bold_prefix="Insight 2 (Stylistic Metadata): ")
-    add_bullet_p(doc, "Zhang et al. (2020) demonstrated that Bi-directional Recurrent Neural Networks (BiLSTM) effectively capture context from both forward and backward sentence trajectories, resolving ambiguities in negated sentiment phrases.", bold_prefix="Insight 3 (Bidirectional Context): ")
-
     add_heading_styled(doc, "1.6 Project Planning and Scheduling", level=2)
     add_heading_styled(doc, "1.6.1 Development Approach", level=3)
-    add_body_p(doc, "The project was executed using an iterative, Agile-inspired software development lifecycle. Agile was selected because machine learning engineering requires continuous cycles of dataset validation, feature experimentation, hyperparameter tuning, and interface refinement. Fig. 1.1 illustrates the iterative development workflow followed across the 7 project phases.")
+    add_body_p(doc, "The project was executed using an iterative, Agile-inspired software development lifecycle. Fig. 1.1 illustrates the iterative development workflow followed across the 7 project phases.")
 
-    add_formula_box(doc, "Fig. 1.1: Agile Development Approach Flowchart",
-        "+-------------------------------------------------------------------------+\n"
-        "|  1. Requirement Study & Dataset Acquisition (Kaggle 40,432 Reviews)      |\n"
-        "+------------------------------------+------------------------------------\n"
-        "                                     |\n"
-        "                                     v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "|  2. Feature Engineering (TF-IDF Word/Char + 7 Stylistic Metadata Fields)|\n"
-        "+------------------------------------+------------------------------------\n"
-        "                                     |\n"
-        "                                     v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "|  3. Model Training & Benchmarking (PyTorch BiLSTM, Linear SVM, LogReg)  |\n"
-        "+------------------------------------+------------------------------------\n"
-        "                                     |\n"
-        "                                     v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "|  4. Flask REST API Backend & Parse.bot Live Scraping Caching Gateway    |\n"
-        "+------------------------------------+------------------------------------\n"
-        "                                     |\n"
-        "                                     v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "|  5. Responsive Glassmorphism Dashboard UI & Chart.js Visual Analytics   |\n"
-        "+------------------------------------+------------------------------------\n"
-        "                                     |\n"
-        "                                     v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "|  6. Integration Testing (18 Test Cases), Security & Cross-Device Audit  |\n"
-        "+------------------------------------+------------------------------------\n"
-        "                                     |\n"
-        "                                     v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "|  7. Cloud Deployment (Render.com) & Keep-Alive Monitoring Setup         |\n"
-        "+-------------------------------------------------------------------------+"
-    )
+    add_figure_image(doc, "fig_1_1_agile_lifecycle.png", "Fig. 1.1: Agile Development Approach Flowchart (7-Phase Lifecycle)")
 
     add_heading_styled(doc, "1.6.2 Project Schedule / Timeline", level=3)
     add_body_p(doc, "Table 1.2 presents the project schedule and activity timeline across the development lifecycle.")
@@ -610,14 +587,12 @@ def generate_50page_report():
     
     add_heading_styled(doc, "2.1 Study of Current System", level=2)
     add_body_p(doc, "At present, major e-commerce marketplaces including Flipkart surface a raw chronological or upvoted list of customer reviews alongside an arithmetic average star rating. Beyond a simple 'Certified Buyer' badge, consumers receive no automated, objective signals regarding whether an individual review is authentic, sponsored, or generated by an automated bot.")
-    add_body_p(doc, "The current operational workflow relies primarily on passive, post-hoc reporting mechanisms where shoppers or sellers flag abusive reviews for review by internal platform trust-and-safety teams. This workflow presents several operational weaknesses: it is entirely reactive, processing reviews only after damage has occurred; it relies on non-public, opaque proprietary heuristics that provide zero transparency to consumers; and it is unable to handle the vast volume of reviews generated during peak shopping events (e.g. Flipkart Big Billion Days), allowing millions of deceptive reviews to remain live for weeks.")
+    add_body_p(doc, "The current operational workflow relies primarily on passive, post-hoc reporting mechanisms where shoppers or sellers flag abusive reviews for review by internal platform trust-and-safety teams. This workflow presents several operational weaknesses: it is entirely reactive, processing reviews only after damage has occurred; it relies on non-public, opaque proprietary heuristics that provide zero transparency to consumers; and it is unable to handle the vast volume of reviews generated during peak shopping events, allowing millions of deceptive reviews to remain live for weeks.")
 
-    add_heading_styled(doc, "2.2 Problems and Weaknesses of Current System", level=2)
-    add_body_p(doc, "A comprehensive analysis of current e-commerce review moderation practices identified the following major systemic weaknesses:")
-    add_bullet_p(doc, "No quantified authenticity metric is provided to consumers. The displayed star rating is an unweighted arithmetic average that can be easily manipulated by flooding a listing with 5-star fake reviews.", bold_prefix="1. Manipulable Star Averages: ")
-    add_bullet_p(doc, "Reading dozens of customer reviews across multiple competing products is extremely time-consuming and mentally exhausting for shoppers.", bold_prefix="2. Cognitive Overload: ")
-    add_bullet_p(doc, "Sellers have no independent mechanism to audit competitor attacks or verify that their own product listings are accurately represented.", bold_prefix="3. Lack of Independent Auditing: ")
-    add_bullet_p(doc, "Existing automated spam filters operate as black boxes, offering no explanation or linguistic evidence as to why a review was flagged.", bold_prefix="4. Black-Box Opacity: ")
+    add_heading_styled(doc, "2.2 Activity Diagram of Data Pipeline", level=2)
+    add_body_p(doc, "Fig. 2.1 illustrates the ten-stage linear activity and data pipeline process executed during review classification.")
+
+    add_figure_image(doc, "fig_2_1_data_pipeline.png", "Fig. 2.1: Activity Diagram of the Data Pipeline Process (10-Stage Flow)")
 
     add_heading_styled(doc, "2.3 Requirements of New System", level=2)
     add_body_p(doc, "Functional Requirements Specification:", bold_prefix="2.3.1 Functional Requirements: ")
@@ -651,52 +626,6 @@ def generate_50page_report():
         ["NFR-06", "Responsiveness", "The web interface shall adapt fluidly to screen widths from 360px (mobile) to 1920px (desktop monitors)."]
     ]
     create_table_styled(doc, nfr_headers, nfr_data, [1.4, 1.4, 4.2])
-
-    add_heading_styled(doc, "2.4 Feasibility Study", level=2)
-    add_body_p(doc, "The technical implementation relies entirely on mature, well-documented open-source Python libraries (Flask, Scikit-Learn, PyTorch, Pandas). The classical machine learning pipeline trains in under 20 seconds on the 40,432-row dataset using a standard laptop CPU, requiring no dedicated GPU infrastructure for inference.", bold_prefix="2.4.1 Technical Feasibility: ")
-    add_body_p(doc, "The project is implemented exclusively using free, open-source software tools (Visual Studio Code, Python, Git) and hosted on free cloud tiers (Render.com, UptimeRobot). The development cost is zero, making the project highly feasible economically.", bold_prefix="2.4.2 Economic Feasibility: ")
-    add_body_p(doc, "The single-page web dashboard requires zero technical training. Pasting text or a URL and clicking 'Analyze' mirrors standard search engine interactions, ensuring smooth adoption by ordinary shoppers.", bold_prefix="2.4.3 Operational Feasibility: ")
-    add_body_p(doc, "The 7-week project schedule was strictly structured, with all development phases completed within the allotted academic timeline.", bold_prefix="2.4.4 Schedule Feasibility: ")
-
-    add_heading_styled(doc, "2.5 Activity Diagram of Data Pipeline", level=2)
-    add_body_p(doc, "Fig. 2.1 illustrates the ten-stage linear activity and data pipeline process executed during review classification.")
-
-    add_formula_box(doc, "Fig. 2.1: Activity Diagram of the Data Pipeline Process",
-        "[START]\n"
-        "   |\n"
-        "   v\n"
-        "1. Input Acquisition (Parse.bot Live Scraping / Bulk Paste Text)\n"
-        "   |\n"
-        "   v\n"
-        "2. Input Validation (Domain: flipkart.com | Path: /p/ or /product-reviews/)\n"
-        "   |\n"
-        "   v\n"
-        "3. Text Preprocessing (Lowercasing, URL/HTML Stripping, Non-Alpha Removal)\n"
-        "   |\n"
-        "   v\n"
-        "4. Feature Engineering (TF-IDF Word 1-2 N-Grams + Char 2-4 N-Grams)\n"
-        "   |\n"
-        "   v\n"
-        "5. Metadata Extraction (Caps Ratio, Exclamation Count, Unique Ratio, Rating)\n"
-        "   |\n"
-        "   v\n"
-        "6. StandardScaler Scaling (Metadata Standardization)\n"
-        "   |\n"
-        "   v\n"
-        "7. Model Matrix Inference (PyTorch BiLSTM / Linear SVM / LogReg / Naive Bayes)\n"
-        "   |\n"
-        "   v\n"
-        "8. Suspicion Flag Evaluation (Excessive Caps, Exclamations, Promo Phrases)\n"
-        "   |\n"
-        "   v\n"
-        "9. Trust Index Calculation: (Real Reviews / Total Reviews) * 100%\n"
-        "   |\n"
-        "   v\n"
-        "10. Visual Output Generation (Dashboard Render, SVG Ring, Chart.js)\n"
-        "   |\n"
-        "   v\n"
-        "[END]"
-    )
 
     add_heading_styled(doc, "2.6 Selection of Tools and Technologies", level=2)
     add_body_p(doc, "Table 2.3 outlines the tools, libraries, and frameworks selected for TrustGuard along with their technical rationale.")
@@ -734,30 +663,22 @@ def generate_50page_report():
     add_body_p(doc, "This section presents the mathematical formulations underlying TrustGuard's feature extraction and classification pipeline.")
 
     add_body_p(doc, "1. Term Frequency - Inverse Document Frequency (TF-IDF):", bold_prefix="2.8.1 TF-IDF Formulation: ")
-    add_body_p(doc, "TF-IDF assigns numerical weights to terms based on their local frequency in a review and their inverse frequency across the entire corpus D. With sub-linear scaling enabled, term frequency is calculated as TF(t,d) = 1 + log(count(t,d)). The complete smooth TF-IDF formulation is defined as:")
-    
     add_formula_box(doc, "Formula 1: Term Frequency - Inverse Document Frequency",
         "TF-IDF(t, d, D) = TF(t, d) * [ log( (1 + |D|) / (1 + |{d in D : t in d}|) ) + 1 ]"
     )
 
     add_body_p(doc, "2. StandardScaler Z-Score Normalization:", bold_prefix="2.8.2 Z-Score Standardization: ")
-    add_body_p(doc, "To prevent features with large numerical ranges (such as review character length) from dominating gradient calculations, all seven metadata attributes are standardized to zero mean (mu = 0) and unit variance (sigma = 1):")
-    
     add_formula_box(doc, "Formula 2: Z-Score Normalization",
         "z = (x - mu) / sigma    where  mu = (1/N)*SUM(x_i),  sigma = sqrt((1/N)*SUM((x_i - mu)^2))"
     )
 
     add_body_p(doc, "3. Linear Support Vector Machine (Linear SVM):", bold_prefix="2.8.3 Linear SVM Objective & Probability Mapping: ")
-    add_body_p(doc, "Linear SVM minimizes the soft-margin hinge loss with L2 regularization to find the optimal separating hyperplane w^T * X + b = 0. The signed distance z is transformed into a calibrated probability via a parameterized sigmoid function:")
-    
     add_formula_box(doc, "Formula 3: Linear SVM Objective & Sigmoidal Probability Mapping",
         "min_{w,b}  (1/2) * ||w||^2  +  C * SUM_{i=1}^N max(0, 1 - y_i * (w^T * x_i + b))\n\n"
         "P(Fake | X) = 1 / ( 1 + exp( -1.2 * (w^T * X + b) ) )"
     )
 
     add_body_p(doc, "4. PyTorch Bi-directional LSTM (BiLSTM) Neural Network Equations:", bold_prefix="2.8.4 BiLSTM Neural Network Formulations: ")
-    add_body_p(doc, "At each time step t for an input word embedding x_t, the forward and backward LSTM units compute activation states via gated mechanisms:")
-    
     add_formula_box(doc, "Formula 4: PyTorch Bi-directional LSTM Gated Equations",
         "f_t = sigmoid( W_f * [h_{t-1}, x_t] + b_f )    [Forget Gate]\n"
         "i_t = sigmoid( W_i * [h_{t-1}, x_t] + b_i )    [Input Gate]\n"
@@ -770,8 +691,6 @@ def generate_50page_report():
     )
 
     add_body_p(doc, "5. Product Trust Index Percentage Calculation:", bold_prefix="2.8.5 Product Trust Index Calculation: ")
-    add_body_p(doc, "The aggregate Product Trust Index represents the percentage of verified authentic reviews out of the total analyzed reviews N:")
-    
     add_formula_box(doc, "Formula 5: Product Trust Index Score",
         "Trust Index (%) = [ Count(REAL Reviews) / Total Reviews Analyzed ] * 100%"
     )
@@ -785,42 +704,12 @@ def generate_50page_report():
     add_heading_styled(doc, "SYSTEM DESIGN", level=1)
     
     add_heading_styled(doc, "3.1 System Architecture", level=2)
-    add_body_p(doc, "TrustGuard follows a modular, 3-tier Model-View-Controller (MVC) architectural design pattern. The presentation layer (View) interacts with the application layer (Controller) purely via JSON REST calls over HTTP. The application layer coordinates between the data acquisition scraper, NLP feature extractors, and the serialized model artifacts (Model). Fig. 3.1 illustrates the architectural components and data flow.")
+    add_body_p(doc, "TrustGuard follows a modular, 3-tier Model-View-Controller (MVC) architectural design pattern. Fig. 3.1 illustrates the architectural components and data flow.")
 
-    add_formula_box(doc, "Fig. 3.1: System Architecture Diagram (3-Tier MVC Pattern)",
-        "+-------------------------------------------------------------------------+\n"
-        "|  PRESENTATION TIER (View): Single-Page Dashboard (HTML5 / CSS3 / JS)    |\n"
-        "|  - Multi-Tab Input Form (Bulk Paste / Live Flipkart URL / Single Test)  |\n"
-        "|  - Trust Index SVG Score Ring | Chart.js Analytics | Filterable Feed     |\n"
-        "+------------------------------------+------------------------------------\n"
-        "                                     |  HTTP JSON Requests / Responses\n"
-        "                                     v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "|  APPLICATION TIER (Controller): Flask REST API Server (app.py)          |\n"
-        "|  - Endpoints: /api/analyze-text, /api/analyze-bulk, /api/analyze-url    |\n"
-        "|  - Input Validation & Domain Whitelist | URL_CACHE In-Memory Layer      |\n"
-        "+------------------+----------------------------------+-------------------\n"
-        "                   |                                  |\n"
-        "                   v                                  v\n"
-        "+------------------------------------+  +---------------------------------+\n"
-        "| LIVE SCRAPING TIER (scraper.py)    |  | NLP & MODEL ENGINE (model.py)   |\n"
-        "| - Parse.bot API Live Client        |  | - TF-IDF Word (15k) & Char (10k)|\n"
-        "| - Offline Fallback Generator       |  | - PyTorch BiLSTM Neural Network |\n"
-        "| - Flipkart Slug Parser             |  | - Linear SVM, LogReg, Naive Bay |\n"
-        "+------------------------------------+  +----------------+----------------+\n"
-        "                                                         |\n"
-        "                                                         v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "|  DATA TIER (Model): Serialized Binary Storage (saved_models/)           |\n"
-        "|  - Linear_SVM.pkl | Logistic_Regression.pkl | Naive_Bayes.pkl           |\n"
-        "|  - tfidf_word.pkl | tfidf_char.pkl | scaler.pkl | metrics.pkl           |\n"
-        "+-------------------------------------------------------------------------+"
-    )
+    add_figure_image(doc, "fig_3_1_system_architecture.png", "Fig. 3.1: System Architecture Diagram (3-Tier MVC Pattern)")
 
     add_heading_styled(doc, "3.2 Data Flow Diagrams (DFD)", level=2)
     add_body_p(doc, "Fig. 3.2: DFD Level 0 Context Diagram", bold_prefix="3.2.1 DFD Level 0 Context Diagram: ")
-    add_body_p(doc, "The Level 0 context diagram represents the entire system as a single process interacting with external entities (User/Shopper and Flipkart Platform).")
-
     add_formula_box(doc, "Fig. 3.2: Data Flow Diagram (DFD) -- Level 0 Context Diagram",
         "+-------------+                                           +--------------+\n"
         "|             | ---- (1) Flipkart Product URL / Text ---> |              |\n"
@@ -838,8 +727,6 @@ def generate_50page_report():
     )
 
     add_body_p(doc, "Fig. 3.3: DFD Level 1 Detailed Process Breakdown", bold_prefix="3.2.2 DFD Level 1 Detailed Process Breakdown: ")
-    add_body_p(doc, "The Level 1 diagram decomposes the TrustGuard system into five core functional sub-processes.")
-
     add_formula_box(doc, "Fig. 3.3: Data Flow Diagram (DFD) -- Level 1 Detailed Pipeline",
         "[ User Input ]\n"
         "      |\n"
@@ -872,36 +759,7 @@ def generate_50page_report():
     add_heading_styled(doc, "3.3 Deep Learning Architecture (PyTorch BiLSTM)", level=2)
     add_body_p(doc, "Fig. 3.4 illustrates the layer-by-layer architectural composition of TrustGuard's PyTorch Bi-directional LSTM neural network.")
 
-    add_formula_box(doc, "Fig. 3.4: PyTorch BiLSTM Deep Learning Neural Network Architecture",
-        "+-------------------------------------------------------------------------+\n"
-        "|  Input Layer (Word Integer Token Sequence Vector, max_len=120)          |\n"
-        "+------------------------------------+------------------------------------\n"
-        "                                     |\n"
-        "                                     v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "|  Embedding Layer (vocab_size=20,000, embed_dim=128, padding_idx=0)       |\n"
-        "+------------------------------------+------------------------------------\n"
-        "                                     |\n"
-        "                                     v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "|  Bidirectional LSTM Layer (hidden_dim=64, bidirectional=True, concat=128)|\n"
-        "+------------------------------------+------------------------------------\n"
-        "                                     |\n"
-        "                                     v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "|  Mean Pooling Layer (Temporal Sequence Reduction over Time Dim)         |\n"
-        "+------------------------------------+------------------------------------\n"
-        "                                     |\n"
-        "                                     v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "|  Dense FC1 (128 -> 32) + ReLU Activation + Dropout(0.3)                 |\n"
-        "+------------------------------------+------------------------------------\n"
-        "                                     |\n"
-        "                                     v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "|  Dense FC2 Output (32 -> 1) + Sigmoid Activation ---> Probability P(Fake)|\n"
-        "+-------------------------------------------------------------------------+"
-    )
+    add_figure_image(doc, "fig_3_4_bilstm_architecture.png", "Fig. 3.4: PyTorch BiLSTM Deep Learning Neural Network Architecture")
 
     add_heading_styled(doc, "3.4 REST API Endpoint Design", level=2)
     add_body_p(doc, "Table 3.1 details the REST API routes exposed by the Flask application backend.")
@@ -968,8 +826,6 @@ def generate_50page_report():
     create_table_styled(doc, bench_headers, bench_data, [2.1, 1.3, 1.1, 1.1, 1.4])
 
     add_body_p(doc, "Evaluation Metrics Formulations:", bold_prefix="4.2.1 Evaluation Metric Formulations: ")
-    add_body_p(doc, "Model classification performance is evaluated using standard binary confusion matrix metrics: True Positives (TP = Fake correctly identified as Fake), True Negatives (TN = Real correctly identified as Real), False Positives (FP = Real incorrectly flagged as Fake), and False Negatives (FN = Fake incorrectly marked as Real):")
-    
     add_formula_box(doc, "Formula 6: Classification Performance Evaluation Metrics",
         "Accuracy  = ( TP + TN ) / ( TP + TN + FP + FN )\n\n"
         "Precision = TP / ( TP + FP )\n\n"
@@ -977,13 +833,15 @@ def generate_50page_report():
         "F1-Score  = 2 * [ ( Precision * Recall ) / ( Precision + Recall ) ]"
     )
 
-    add_heading_styled(doc, "4.3 Comparative Analysis & Discussion", level=2)
-    add_body_p(doc, "The experimental benchmark results demonstrate several critical insights:")
-    add_bullet_p(doc, "The PyTorch BiLSTM Deep Learning model achieved the highest accuracy (96.40%) by leveraging bidirectional recurrent cells to capture sequential word order context across the entire sentence, effectively recognizing complex, subtle promotional patterns.", bold_prefix="1. BiLSTM Superiority: ")
-    add_bullet_p(doc, "Linear SVM demonstrated remarkable performance (95.70% accuracy), outperforming Logistic Regression (94.95%) and Naive Bayes (90.96%). The high dimensionality of the combined feature space (25,007 features) provides a rich hyperplane boundary that Linear SVM separates with minimal margin errors.", bold_prefix="2. Linear SVM Effectiveness: ")
-    add_bullet_p(doc, "Incorporating character-level n-grams (2-4 grams) and stylistic metadata features improved classification accuracy by +4.74% compared to the word-only Naive Bayes baseline, proving that sub-word character repetition and capitalization ratios are essential markers of review spam.", bold_prefix="3. Impact of Character N-Grams: ")
+    add_heading_styled(doc, "4.4 System Screens and Testing Evidence", level=2)
+    add_body_p(doc, "The following screenshots captured directly from the live running application document the working behavior of TrustGuard.")
 
-    add_heading_styled(doc, "4.4 Comprehensive Test Cases and Results", level=2)
+    add_figure_image(doc, "fig_4_1_dashboard_landing.png", "Fig. 4.1: Dashboard -- Review Input Screen (Landing Page)")
+    add_figure_image(doc, "fig_4_2_single_review_test.png", "Fig. 4.2: Single Review Test -- Fake Review Correctly Flagged with 3 Suspicion Flags")
+    add_figure_image(doc, "fig_4_3_bulk_analysis_dashboard.png", "Fig. 4.3: Bulk Analysis -- Trust Index Dashboard for Samsung AC Reviews (100% Real)")
+    add_figure_image(doc, "fig_4_4_benchmark_modal.png", "Fig. 4.4: Model Performance Benchmark Modal with Live Accuracy & F1 Metrics")
+
+    add_heading_styled(doc, "4.5 Comprehensive Test Cases and Results", level=2)
     add_body_p(doc, "Table 4.3 outlines the 18 comprehensive test cases executed during system integration and security validation.")
 
     tc_headers = ["Test ID", "Module / Area", "Test Input / Condition", "Expected Output", "Actual Output", "Status"]
@@ -1092,7 +950,7 @@ def generate_50page_report():
     add_body_p(doc, "[15] Kaggle Datasets. (2023). \"E-Commerce Fake Product Reviews Dataset (CG vs OR).\" Available online: https://www.kaggle.com/")
 
     doc.save("MARWADI_UNIVERSITY_PROJECT_REPORT.docx")
-    print("Successfully generated COMPREHENSIVE 50-PAGE MARWADI_UNIVERSITY_PROJECT_REPORT.docx!")
+    print("Successfully generated MARWADI_UNIVERSITY_PROJECT_REPORT.docx with embedded high-res images and flowcharts!")
 
 if __name__ == '__main__':
-    generate_50page_report()
+    generate_50page_report_with_images()
