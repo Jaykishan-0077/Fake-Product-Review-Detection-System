@@ -7,6 +7,7 @@ from docx.oxml import OxmlElement, parse_xml
 from docx.oxml.ns import nsdecls, qn
 
 IMG_DIR = "/Users/jk/Desktop/flipkart_fake_review_detector/report_images"
+FORMULA_DIR = "/Users/jk/Desktop/flipkart_fake_review_detector/report_images/formulas"
 
 def set_cell_background(cell, fill_hex):
     tcPr = cell._tc.get_or_add_tcPr()
@@ -87,7 +88,7 @@ def add_body_p(doc, text, bold_prefix=None, space_after=10):
     p = doc.add_paragraph()
     p.paragraph_format.space_before = Pt(0)
     p.paragraph_format.space_after = Pt(space_after)
-    p.paragraph_format.line_spacing = 1.5 # Strict 1.5 Line Spacing for Guidelines
+    p.paragraph_format.line_spacing = 1.5 # Strict 1.5 Line Spacing as per Guideline
     p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     
     if bold_prefix:
@@ -123,25 +124,6 @@ def add_bullet_p(doc, text, bold_prefix=None):
     r_body.font.color.rgb = RGBColor(0, 0, 0)
     return p
 
-def add_formula_box(doc, formula_title, formula_text):
-    p = doc.add_paragraph()
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p.paragraph_format.space_before = Pt(12)
-    p.paragraph_format.space_after = Pt(12)
-    p.paragraph_format.line_spacing = 1.15
-    
-    r_title = p.add_run(f"[{formula_title}]\n")
-    r_title.font.name = 'Times New Roman'
-    r_title.font.size = Pt(11.5)
-    r_title.bold = True
-    r_title.font.color.rgb = RGBColor(0, 0, 0)
-
-    r_f = p.add_run(formula_text)
-    r_f.font.name = 'Courier New'
-    r_f.font.size = Pt(11)
-    r_f.bold = True
-    r_f.font.color.rgb = RGBColor(0, 0, 0)
-
 def add_figure_image(doc, img_filename, caption_text, width_inches=5.8):
     img_path = os.path.join(IMG_DIR, img_filename)
     if os.path.exists(img_path):
@@ -162,6 +144,16 @@ def add_figure_image(doc, img_filename, caption_text, width_inches=5.8):
         r_cap.font.bold = True
         r_cap.font.italic = True
         r_cap.font.color.rgb = RGBColor(50, 50, 50)
+
+def add_formula_image(doc, formula_filename, width_inches=5.5):
+    f_path = os.path.join(FORMULA_DIR, formula_filename)
+    if os.path.exists(f_path):
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.space_before = Pt(10)
+        p.paragraph_format.space_after = Pt(10)
+        run = p.add_run()
+        run.add_picture(f_path, width=Inches(width_inches))
 
 def create_table_styled(doc, headers, rows_data, col_widths=None):
     table = doc.add_table(rows=len(rows_data)+1, cols=len(headers))
@@ -207,10 +199,10 @@ def create_table_styled(doc, headers, rows_data, col_widths=None):
     doc.add_paragraph().paragraph_format.space_after = Pt(10)
     return table
 
-def generate_50page_report_with_images():
+def generate_50page_report_with_formula_images():
     doc = docx.Document()
 
-    # Margins: Left 1.25", Right 1.0", Top 1.0", Bottom 1.0"
+    # Configure Margins: Left 1.25", Right 1.0", Top 1.0", Bottom 1.0"
     sec_cover = doc.sections[0]
     sec_cover.top_margin = Inches(1.0)
     sec_cover.bottom_margin = Inches(1.0)
@@ -660,40 +652,27 @@ def generate_50page_report_with_images():
     create_table_styled(doc, spec_headers, spec_data, [1.8, 2.6, 2.6])
 
     add_heading_styled(doc, "2.8 Mathematical & Algorithmic Formulations", level=2)
-    add_body_p(doc, "This section presents the mathematical formulations underlying TrustGuard's feature extraction and classification pipeline.")
+    add_body_p(doc, "This section presents the mathematical formulations underlying TrustGuard's feature extraction and classification pipeline, rendered as publication-grade formula cards.")
 
     add_body_p(doc, "1. Term Frequency - Inverse Document Frequency (TF-IDF):", bold_prefix="2.8.1 TF-IDF Formulation: ")
-    add_formula_box(doc, "Formula 1: Term Frequency - Inverse Document Frequency",
-        "TF-IDF(t, d, D) = TF(t, d) * [ log( (1 + |D|) / (1 + |{d in D : t in d}|) ) + 1 ]"
-    )
+    add_body_p(doc, "TF-IDF assigns numerical weights to terms based on their local frequency in a review and their inverse frequency across the entire corpus D. With sub-linear scaling enabled, term frequency is calculated as TF(t,d) = 1 + log(count(t,d)). The complete smooth TF-IDF formulation is defined as:")
+    add_formula_image(doc, "formula_1_tfidf.png", width_inches=5.8)
 
     add_body_p(doc, "2. StandardScaler Z-Score Normalization:", bold_prefix="2.8.2 Z-Score Standardization: ")
-    add_formula_box(doc, "Formula 2: Z-Score Normalization",
-        "z = (x - mu) / sigma    where  mu = (1/N)*SUM(x_i),  sigma = sqrt((1/N)*SUM((x_i - mu)^2))"
-    )
+    add_body_p(doc, "To prevent features with large numerical ranges (such as review character length) from dominating gradient calculations, all seven metadata attributes are standardized to zero mean (mu = 0) and unit variance (sigma = 1):")
+    add_formula_image(doc, "formula_2_zscore.png", width_inches=5.8)
 
     add_body_p(doc, "3. Linear Support Vector Machine (Linear SVM):", bold_prefix="2.8.3 Linear SVM Objective & Probability Mapping: ")
-    add_formula_box(doc, "Formula 3: Linear SVM Objective & Sigmoidal Probability Mapping",
-        "min_{w,b}  (1/2) * ||w||^2  +  C * SUM_{i=1}^N max(0, 1 - y_i * (w^T * x_i + b))\n\n"
-        "P(Fake | X) = 1 / ( 1 + exp( -1.2 * (w^T * X + b) ) )"
-    )
+    add_body_p(doc, "Linear SVM minimizes the soft-margin hinge loss with L2 regularization to find the optimal separating hyperplane w^T * X + b = 0. The signed distance z is transformed into a calibrated probability via a parameterized sigmoid function:")
+    add_formula_image(doc, "formula_3_svm.png", width_inches=5.8)
 
     add_body_p(doc, "4. PyTorch Bi-directional LSTM (BiLSTM) Neural Network Equations:", bold_prefix="2.8.4 BiLSTM Neural Network Formulations: ")
-    add_formula_box(doc, "Formula 4: PyTorch Bi-directional LSTM Gated Equations",
-        "f_t = sigmoid( W_f * [h_{t-1}, x_t] + b_f )    [Forget Gate]\n"
-        "i_t = sigmoid( W_i * [h_{t-1}, x_t] + b_i )    [Input Gate]\n"
-        "C_tilde_t = tanh( W_c * [h_{t-1}, x_t] + b_c ) [Candidate Cell State]\n"
-        "C_t = f_t (*) C_{t-1} + i_t (*) C_tilde_t       [Cell State Update]\n"
-        "o_t = sigmoid( W_o * [h_{t-1}, x_t] + b_o )    [Output Gate]\n"
-        "h_t = o_t (*) tanh( C_t )                       [Hidden Output State]\n\n"
-        "h_BiLSTM = [ h_forward_t  ;  h_backward_t ]     [Bidirectional Concatenation]\n\n"
-        "P(Fake | X) = sigmoid( W_2 * ReLU( W_1 * MeanPool( h_BiLSTM ) ) )"
-    )
+    add_body_p(doc, "At each time step t for an input word embedding x_t, the forward and backward LSTM units compute activation states via gated mechanisms:")
+    add_formula_image(doc, "formula_4_bilstm.png", width_inches=5.8)
 
     add_body_p(doc, "5. Product Trust Index Percentage Calculation:", bold_prefix="2.8.5 Product Trust Index Calculation: ")
-    add_formula_box(doc, "Formula 5: Product Trust Index Score",
-        "Trust Index (%) = [ Count(REAL Reviews) / Total Reviews Analyzed ] * 100%"
-    )
+    add_body_p(doc, "The aggregate Product Trust Index represents the percentage of verified authentic reviews out of the total analyzed reviews N:")
+    add_formula_image(doc, "formula_5_trust_index.png", width_inches=5.8)
 
     doc.add_page_break()
 
@@ -710,51 +689,7 @@ def generate_50page_report_with_images():
 
     add_heading_styled(doc, "3.2 Data Flow Diagrams (DFD)", level=2)
     add_body_p(doc, "Fig. 3.2: DFD Level 0 Context Diagram", bold_prefix="3.2.1 DFD Level 0 Context Diagram: ")
-    add_formula_box(doc, "Fig. 3.2: Data Flow Diagram (DFD) -- Level 0 Context Diagram",
-        "+-------------+                                           +--------------+\n"
-        "|             | ---- (1) Flipkart Product URL / Text ---> |              |\n"
-        "|   Shopper   |                                           |  0.0 TRUST-  |\n"
-        "|   / User    | <--- (4) Trust Score, Flags & Charts --- |    GUARD     |\n"
-        "|             |                                           |    SYSTEM    |\n"
-        "+-------------+                                           +-------+------+\n"
-        "                                                                  |  ^\n"
-        "                                       (2) Scrape Request / Auth  |  | (3) Raw Reviews\n"
-        "                                                                  v  |\n"
-        "                                                          +-------+------+\n"
-        "                                                          |   Flipkart   |\n"
-        "                                                          |  (Parse.bot) |\n"
-        "                                                          +--------------+"
-    )
-
-    add_body_p(doc, "Fig. 3.3: DFD Level 1 Detailed Process Breakdown", bold_prefix="3.2.2 DFD Level 1 Detailed Process Breakdown: ")
-    add_formula_box(doc, "Fig. 3.3: Data Flow Diagram (DFD) -- Level 1 Detailed Pipeline",
-        "[ User Input ]\n"
-        "      |\n"
-        "      v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "| 1.0 Data Acquisition & URL Cache (Check Cache -> Parse.bot API Fetch)   |\n"
-        "+------------------------------------+------------------------------------\n"
-        "                                     | Raw Review Records\n"
-        "                                     v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "| 2.0 Text Preprocessing & Cleaning (Lowercasing, Regex Noise Stripping)  |\n"
-        "+------------------------------------+------------------------------------\n"
-        "                                     | Clean Text Stream\n"
-        "                                     v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "| 3.0 Hybrid NLP Feature Extraction (TF-IDF Word + Char + Metadata Stack) |\n"
-        "+------------------------------------+------------------------------------\n"
-        "                                     | Sparse Feature Tensor X\n"
-        "                                     v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "| 4.0 Classifier Inference & Suspicion Flagging (BiLSTM / Linear SVM)     |\n"
-        "+------------------------------------+------------------------------------\n"
-        "                                     | Predictions + Confidence Scores\n"
-        "                                     v\n"
-        "+-------------------------------------------------------------------------+\n"
-        "| 5.0 Aggregation & Dashboard Output (Trust Index % + Chart.js Rendering) |\n"
-        "+-------------------------------------------------------------------------+"
-    )
+    add_body_p(doc, "The Level 0 context diagram represents the entire system as a single process interacting with external entities (User/Shopper and Flipkart Platform).")
 
     add_heading_styled(doc, "3.3 Deep Learning Architecture (PyTorch BiLSTM)", level=2)
     add_body_p(doc, "Fig. 3.4 illustrates the layer-by-layer architectural composition of TrustGuard's PyTorch Bi-directional LSTM neural network.")
@@ -826,12 +761,8 @@ def generate_50page_report_with_images():
     create_table_styled(doc, bench_headers, bench_data, [2.1, 1.3, 1.1, 1.1, 1.4])
 
     add_body_p(doc, "Evaluation Metrics Formulations:", bold_prefix="4.2.1 Evaluation Metric Formulations: ")
-    add_formula_box(doc, "Formula 6: Classification Performance Evaluation Metrics",
-        "Accuracy  = ( TP + TN ) / ( TP + TN + FP + FN )\n\n"
-        "Precision = TP / ( TP + FP )\n\n"
-        "Recall    = TP / ( TP + FN )\n\n"
-        "F1-Score  = 2 * [ ( Precision * Recall ) / ( Precision + Recall ) ]"
-    )
+    add_body_p(doc, "Model classification performance is evaluated using standard binary confusion matrix metrics:")
+    add_formula_image(doc, "formula_6_metrics.png", width_inches=5.8)
 
     add_heading_styled(doc, "4.4 System Screens and Testing Evidence", level=2)
     add_body_p(doc, "The following screenshots captured directly from the live running application document the working behavior of TrustGuard.")
@@ -950,7 +881,7 @@ def generate_50page_report_with_images():
     add_body_p(doc, "[15] Kaggle Datasets. (2023). \"E-Commerce Fake Product Reviews Dataset (CG vs OR).\" Available online: https://www.kaggle.com/")
 
     doc.save("MARWADI_UNIVERSITY_PROJECT_REPORT.docx")
-    print("Successfully generated MARWADI_UNIVERSITY_PROJECT_REPORT.docx with embedded high-res images and flowcharts!")
+    print("Successfully generated MARWADI_UNIVERSITY_PROJECT_REPORT.docx with embedded formula images, flowcharts, and screenshots!")
 
 if __name__ == '__main__':
-    generate_50page_report_with_images()
+    generate_50page_report_with_formula_images()
