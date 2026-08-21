@@ -17,12 +17,10 @@
 - [System Architecture](#-system-architecture)
 - [Model Performance Benchmark](#-model-performance-benchmark)
 - [Mathematical & Algorithmic Foundations](#-mathematical--algorithmic-foundations)
-- [Visual Interface & Testing Evidence](#-visual-interface--testing-evidence)
+- [UI & Functional Modules Overview](#-ui--functional-modules-overview)
 - [Repository Structure](#-repository-structure)
 - [Installation & Quickstart Guide](#-installation--quickstart-guide)
 - [REST API Specification](#-rest-api-specification)
-- [Academic Report & Research Context](#-academic-report--research-context)
-- [Authors & Acknowledgements](#-authors--acknowledgements)
 
 ---
 
@@ -121,17 +119,17 @@ P(\text{Fake} \mid X) &= \sigma(W_2 \cdot \text{ReLU}(W_1 \cdot \text{MeanPool}(
 
 ---
 
-## 📷 Visual Interface & Testing Evidence
+## 💻 UI & Functional Modules Overview
 
-| Dashboard Landing Screen | Single Review Suspicion Test |
-| :---: | :---: |
-| ![Landing Screen](docs/report_images/fig_4_1_dashboard_landing.png) | ![Single Test](docs/report_images/fig_4_2_single_review_test.png) |
-| *Multi-tab input interface with quick sample loaders* | *Fake review detected with 3 suspicion flags* |
-
-| Live Flipkart Product Bulk Analysis | Model Benchmark Modal |
-| :---: | :---: |
-| ![Bulk Analysis](docs/report_images/fig_4_3_bulk_analysis_dashboard.png) | ![Benchmark Modal](docs/report_images/fig_4_4_benchmark_modal.png) |
-| *Samsung AC reviews verified with 100% Trust Index* | *Live model accuracy and F1 benchmark comparison* |
+| Module Component | Interface Functionality | User Experience & Output |
+| :--- | :--- | :--- |
+| **Tab 1: Bulk Reviews** | Paste multi-line raw review blocks directly from any Flipkart product page. | Instant batch analysis with Trust Index score, total counts, and review breakdown cards. |
+| **Tab 2: URL Inspector** | Enter a live Flipkart product link (`flipkart.com/.../p/...`). | Live scraping of 30 customer reviews via Parse.bot API with product name extraction. |
+| **Tab 3: Single Tester** | Enter single review text + interactive star rating slider (1–5). | Real-time classification verdict (`REAL` / `FAKE`) with percentage confidence. |
+| **Trust Score Ring** | Animated circular SVG progress ring. | Visual percentage gauge color-coded (Green for Authentic, Red for High Spam Risk). |
+| **Chart.js Analytics** | Interactive Doughnut & Bar charts. | Visual split of authentic vs fake distribution and star rating breakdown. |
+| **Review Feed** | Filterable cards with `All`, `Real Only`, and `Fake Only` tabs. | Displays review author, rating, text, confidence badge, and specific suspicion warning tags. |
+| **Benchmark Modal** | Header action button opening live benchmark table. | Side-by-side comparison of accuracy and F1 scores across all trained models. |
 
 ---
 
@@ -144,7 +142,7 @@ Fake-Product-Review-Detection-System/
 ├── scraper.py                  # Parse.bot Flipkart Scraper & URL Caching Gateway
 ├── fake reviews dataset.csv    # 40,432 Labeled Training Dataset (CG vs OR)
 ├── requirements.txt            # Python Dependencies (Flask, PyTorch, Scikit-Learn, etc.)
-├── README.md                   # Comprehensive Project Documentation (This File)
+├── README.md                   # Project Architecture & Documentation (This File)
 ├── templates/
 │   └── index.html              # Responsive Glassmorphic Single-Page Application Layout
 ├── static/
@@ -152,20 +150,14 @@ Fake-Product-Review-Detection-System/
 │   │   └── style.css           # Glassmorphism Modern Dark-Theme Design System
 │   └── js/
 │       └── main.js             # Async REST Client, DOM Controller & Chart.js Visualizations
-├── saved_models/               # Serialized Models & Feature Transformers
-│   ├── Linear_SVM.pkl          # Trained Linear Support Vector Classifier (95.70%)
-│   ├── Logistic_Regression.pkl # Trained Logistic Regression Classifier (94.95%)
-│   ├── Naive_Bayes.pkl         # Trained Multinomial Naive Bayes Classifier (90.96%)
-│   ├── tfidf_word.pkl          # 15,000 Word N-Gram TF-IDF Vectorizer
-│   ├── tfidf_char.pkl          # 10,000 Character N-Gram TF-IDF Vectorizer
-│   ├── scaler.pkl              # StandardScaler for Review Metadata Attributes
-│   └── metrics.pkl             # Serialized Accuracy and F1 Benchmark Data
-└── docs/                       # Project Documentation & Academic Report
-    ├── MARWADI_UNIVERSITY_PROJECT_REPORT.docx  # 50-Page Academic Project Report
-    ├── generate_comprehensive_50page_report.py # Report Generation Pipeline
-    ├── generate_flowchart_images.py            # High-Resolution Flowchart Generator
-    ├── generate_formula_images.py              # LaTeX Formula Image Renderer
-    └── report_images/          # 300 DPI Architectural Diagrams & UI Screenshots
+└── saved_models/               # Serialized Models & Feature Transformers
+    ├── Linear_SVM.pkl          # Trained Linear Support Vector Classifier (95.70%)
+    ├── Logistic_Regression.pkl # Trained Logistic Regression Classifier (94.95%)
+    ├── Naive_Bayes.pkl         # Trained Multinomial Naive Bayes Classifier (90.96%)
+    ├── tfidf_word.pkl          # 15,000 Word N-Gram TF-IDF Vectorizer
+    ├── tfidf_char.pkl          # 10,000 Character N-Gram TF-IDF Vectorizer
+    ├── scaler.pkl              # StandardScaler for Review Metadata Attributes
+    └── metrics.pkl             # Serialized Accuracy and F1 Benchmark Data
 ```
 
 ---
@@ -232,23 +224,3 @@ Open your web browser and navigate to:
 | **`/api/analyze-text`** | `POST` | `{"text": "Sample review text", "rating": 5, "model": "Linear SVM"}` | `{"prediction": "REAL", "confidence": 97.8, "flags": []}` | Classifies a single manually typed review text. |
 | **`/api/models`** | `GET` | *None* | `{"Linear SVM": {"accuracy": 95.70, "f1": 95.68}, ...}` | Returns benchmark metrics for all trained models. |
 | **`/ping`** | `GET` | *None* | `{"status": "active"}` | Health-check endpoint for automated keep-alive monitors. |
-
----
-
-## 📖 Academic Report & Research Context
-
-This project was developed as **Major Project – I (01CE0716)** for the degree of **Bachelor of Technology in Computer Engineering** at **Marwadi University, Rajkot**.
-
-* The complete, formal 50-page university project report is available at:  
-  👉 [`docs/MARWADI_UNIVERSITY_PROJECT_REPORT.docx`](docs/MARWADI_UNIVERSITY_PROJECT_REPORT.docx)
-* Formatted strictly in accordance with institutional guidelines: **Times New Roman**, **1.5 line spacing**, **1.25" binding margins**, LaTeX formula cards, and 18 executed validation test cases (**TC-01 to TC-18**).
-
----
-
-## 👥 Authors & Acknowledgements
-
-* **Jaykishan Kalariya** — Enrollment No: `92301703102` *(Project Lead, Machine Learning & Deep Learning Engineer)*
-* **Maan Kalariya** — Enrollment No: `92301703111` *(System Analyst, Full-Stack & UI/UX Developer)*
-* **Internal Guide**: **Prof. Charmi Vora**, Assistant Professor, Department of Computer Engineering
-* **Department Head**: **Prof. (Dr.) Krunal Vaghela**, Associate Dean & Head, Department of Computer Engineering
-* **Institution**: **Faculty of Engineering & Technology, Marwadi University, Rajkot**
