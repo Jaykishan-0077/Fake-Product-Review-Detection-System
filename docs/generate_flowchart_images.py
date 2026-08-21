@@ -2,7 +2,8 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-output_dir = "/Users/jk/Desktop/flipkart_fake_review_detector/report_images"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+output_dir = os.path.join(BASE_DIR, "report_images")
 os.makedirs(output_dir, exist_ok=True)
 
 plt.rcParams['font.family'] = 'sans-serif'

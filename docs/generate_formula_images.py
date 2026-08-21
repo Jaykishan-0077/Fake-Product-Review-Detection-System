@@ -1,7 +1,8 @@
 import os
 import matplotlib.pyplot as plt
 
-formula_dir = "/Users/jk/Desktop/flipkart_fake_review_detector/report_images/formulas"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+formula_dir = os.path.join(BASE_DIR, "report_images", "formulas")
 os.makedirs(formula_dir, exist_ok=True)
 
 plt.rcParams['mathtext.fontset'] = 'cm' # Computer Modern (Standard LaTeX font)

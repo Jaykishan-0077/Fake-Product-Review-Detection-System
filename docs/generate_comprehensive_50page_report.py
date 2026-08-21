@@ -6,8 +6,9 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml import OxmlElement, parse_xml
 from docx.oxml.ns import nsdecls, qn
 
-IMG_DIR = "/Users/jk/Desktop/flipkart_fake_review_detector/report_images"
-FORMULA_DIR = "/Users/jk/Desktop/flipkart_fake_review_detector/report_images/formulas"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+IMG_DIR = os.path.join(BASE_DIR, "report_images")
+FORMULA_DIR = os.path.join(BASE_DIR, "report_images", "formulas")
 
 def set_cell_background(cell, fill_hex):
     tcPr = cell._tc.get_or_add_tcPr()
@@ -895,8 +896,9 @@ def generate_black_theme_report():
     add_body_p(doc, "[14] Chart.js Community. (2024). \"Chart.js: Simple yet flexible JavaScript charting for designers & developers.\" Available online: https://www.chartjs.org/")
     add_body_p(doc, "[15] Kaggle Datasets. (2023). \"E-Commerce Fake Product Reviews Dataset (CG vs OR).\" Available online: https://www.kaggle.com/")
 
-    doc.save("MARWADI_UNIVERSITY_PROJECT_REPORT.docx")
-    print("Successfully generated BLACK THEME MARWADI_UNIVERSITY_PROJECT_REPORT.docx!")
+    out_file = os.path.join(BASE_DIR, "MARWADI_UNIVERSITY_PROJECT_REPORT.docx")
+    doc.save(out_file)
+    print(f"Successfully generated BLACK THEME {out_file}!")
 
 if __name__ == '__main__':
     generate_black_theme_report()

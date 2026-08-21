@@ -1,154 +1,254 @@
-# 🛡️ Flipkart Fake Review Detection System — Project Architecture & Workflow Documentation
+# 🛡️ TrustGuard: AI-Powered Flipkart Fake Review Detection System
+
+[![Python Version](https://img.shields.io/badge/Python-3.11%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![Framework](https://img.shields.io/badge/Web_Framework-Flask_3.0-lightgrey.svg?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![Deep Learning](https://img.shields.io/badge/Deep_Learning-PyTorch_2.1-EE4C2C.svg?logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![Machine Learning](https://img.shields.io/badge/ML-Scikit--Learn_1.4-F7931E.svg?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+[![Visualization](https://img.shields.io/badge/Charts-Chart.js_4.4-FF6384.svg?logo=chart.js&logoColor=white)](https://www.chartjs.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Project_Status-Completed-brightgreen.svg)]()
+
+> **TrustGuard** is a full-stack, AI-powered review authenticity verification and product credibility auditing platform designed for **Flipkart** e-commerce product pages. It combines natural language processing (NLP), hybrid statistical feature engineering, classical machine learning classifiers, and deep neural networks (PyTorch BiLSTM) to detect computer-generated (CG) fake reviews, rating inflation attacks, and promotional spam in real time.
 
 ---
 
-## 📌 Executive Summary
-**TrustGuard Flipkart Edition** is an end-to-end Machine Learning web application designed to evaluate the authenticity of e-commerce product reviews on **Flipkart**. The system ingests live product reviews via the **Parse.bot Flipkart API**, processes text using **TF-IDF Word & Character N-Grams** combined with **standardized review metadata features**, and classifies each review as **`REAL`** or **`FAKE`** using trained Machine Learning models (**Linear SVM**, **Logistic Regression**, and **Multinomial Naive Bayes**).
-
-The entire backend is built with **Flask (Python 3)**, and the user interface features a responsive **Glassmorphism Dark Theme Dashboard** powered by Vanilla JavaScript and **Chart.js**.
+## 📌 Table of Contents
+- [Key Features](#-key-features)
+- [System Architecture](#-system-architecture)
+- [Model Performance Benchmark](#-model-performance-benchmark)
+- [Mathematical & Algorithmic Foundations](#-mathematical--algorithmic-foundations)
+- [Visual Interface & Testing Evidence](#-visual-interface--testing-evidence)
+- [Repository Structure](#-repository-structure)
+- [Installation & Quickstart Guide](#-installation--quickstart-guide)
+- [REST API Specification](#-rest-api-specification)
+- [Academic Report & Research Context](#-academic-report--research-context)
+- [Authors & Acknowledgements](#-authors--acknowledgements)
 
 ---
 
-## 📂 Desktop Project Location & Directory Structure
+## 🚀 Key Features
 
-**Active Desktop Directory**: `/Users/jk/Desktop/flipkart_fake_review_detector`
+* **🔍 Live Flipkart Product URL Inspector**: Extracts up to 30 customer reviews directly from any live Flipkart product page via the **Parse.bot API**, complete with product name extraction, category auto-detection, and an in-memory **URL caching layer** to conserve API credits.
+* **📝 Multi-Paragraph Bulk Review Analyzer**: Allows shoppers to copy and paste blocks of raw reviews directly from e-commerce listings for instantaneous batch evaluation.
+* **🧪 Single Review Inspector**: Interactive manual testing suite featuring a 1-to-5 star rating slider and instant real-time prediction output.
+* **🎯 Automated Product Trust Index (%)**: Computes an aggregate product authenticity score:
+  $$\text{Trust Index (\%)} = \left( \frac{\text{Count of REAL Reviews}}{\text{Total Reviews Analyzed}} \right) \times 100\%$$
+* **🚩 Explainable Suspicion Flagging**: Instead of acting as an opaque black box, TrustGuard flags specific spam indicators including:
+  * 🔠 **Excessive Capitalization** (All-caps shouting spam)
+  * ❗ **Repeated Exclamation Marks** (Over-enthusiastic bot text)
+  * 🔁 **Repetitive Vocabulary** (Low lexical diversity)
+  * 📢 **Generic Promotional Phrases** (*"100% RECOMMENDED"*, *"BUY BUY BUY"*, *"MUST BUY"*)
+* **⚡ Multi-Model Switching**: Allows instant model toggling in the UI header between **PyTorch BiLSTM**, **Linear SVM**, **Logistic Regression**, and **Multinomial Naive Bayes**.
+* **📱 Responsive Glassmorphic Dashboard**: Dark-mode aesthetic with fluid touch-friendly UI controls (44px–48px touch targets) optimized for desktop computers, tablets, and smartphones.
+* **🔄 Production Resilience & 24/7 Keep-Alive**: Includes an integrated `/ping` health endpoint for automated UptimeRobot monitoring, alongside offline category-tailored fallback review generators.
+
+---
+
+## 🏗️ System Architecture
+
+TrustGuard follows a modular **3-Tier Model-View-Controller (MVC)** architectural design:
 
 ```text
-flipkart_fake_review_detector/
-├── app.py                      # Flask Web Server & REST API Endpoint Router
-├── model.py                    # Core ML Architecture, Training Pipeline & Predictor
-├── scraper.py                  # Parse.bot API Scraper & Real Buyer Review Generator
-├── dataset_generator.py        # Utility script for CSV dataset preprocessing
-├── fake reviews dataset.csv    # 40,432 Kaggle Training Dataset (CG vs OR)
-├── requirements.txt            # Python Package Dependencies
-├── README.md                   # Full Project Architecture Documentation (This File)
-├── templates/
-│   └── index.html              # Frontend Dashboard HTML5 Template
-├── static/
-│   ├── css/
-│   │   └── style.css           # Glassmorphism Modern Styling & Dark Theme
-│   └── js/
-│       └── main.js             # Async Frontend API Client, DOM Handler & Chart.js
-└── saved_models/               # Persisted Scikit-Learn Model & Vectorizer Binaries
-    ├── linear_svm.pkl          # Trained LinearSVC Model (Acc: 95.71%)
-    ├── logistic_regression.pkl # Trained LogisticRegression Model (Acc: 94.99%)
-    ├── naive_bayes.pkl         # Trained MultinomialNB Model (Acc: 90.96%)
-    ├── tfidf_word.pkl          # TF-IDF Word Vectorizer (1-2 N-Grams)
-    ├── tfidf_char.pkl          # TF-IDF Character N-Gram Vectorizer (2-4 N-Grams)
-    ├── scaler.pkl              # StandardScaler for Metadata Features
-    └── metrics.pkl             # Serialized Model Accuracy & F1 Benchmark Metrics
+[ Shopper / Client Browser ]
+           │
+           ▼  (HTTP / JSON REST API Calls)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 1. PRESENTATION TIER (View)                                                 │
+│    • Glassmorphic Single-Page Application (HTML5, CSS3, Vanilla JS)         │
+│    • Animated SVG Trust Index Progress Ring & Metrics Stat Cards            │
+│    • Dynamic Chart.js Doughnut (Authenticity) & Bar Charts (Star Ratings)   │
+│    • Filterable Real-time Review Feed with Confidence Badges & Flags        │
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │
+                                       ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 2. APPLICATION TIER (Controller)                                            │
+│    • Flask REST API Server (`app.py`)                                       │
+│    • URL Domain & Path Validator (`flipkart.com`, `/p/`, `pid=`)            │
+│    • In-Memory `URL_CACHE` Hash Table (Zero Credit Waste on Duplicates)    │
+│    • Live Scraping Gateway (`scraper.py`) via Parse.bot API                 │
+│    • Feature Engineering & Inference Engine (`model.py`)                    │
+└──────────────────────────────────────┬──────────────────────────────────────┘
+                                       │
+                                       ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 3. DATA & MODEL TIER (Model Storage)                                        │
+│    • 40,432 Kaggle Labeled Dataset (`CG` Computer-Generated vs `OR` Real)  │
+│    • Serialized Scikit-Learn Classifiers (`Linear_SVM.pkl`, `LogReg.pkl`)   │
+│    • PyTorch Deep Learning BiLSTM Architecture (`BiLSTMClassifier`)         │
+│    • Vectorizers: 15,000 Word N-Grams + 10,000 Char N-Grams + StandardScaler│
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🛠️ Detailed File-by-File Breakdown: "Which File Does What Work, and When?"
+## 🏆 Model Performance Benchmark
 
-### 1. `app.py` — Web Server Controller & API Dispatcher
-- **Role**: Entry point for the web application. Starts the Flask server on `http://127.0.0.1:5050`.
-- **When It Works**: Runs continuously in the background listening for HTTP client requests.
-- **Key Responsibilities**:
-  - Automatically invokes `manager.load_or_train()` on startup to initialize ML models into memory.
-  - Serves static assets (`style.css`, `main.js`) and renders `templates/index.html` on `GET /`.
-  - **`POST /api/analyze-url`**: Accepts Flipkart URLs, delegates scraping to `scraper.py`, passes reviews to `model.py`, and returns calculated **Trust Index** scores and review predictions in JSON.
-  - **`POST /api/analyze-bulk`**: Accepts pasted Flipkart review text blocks, splits them by line/paragraph, and classifies each review.
-  - **`POST /api/analyze-text`**: Processes single text inputs for quick manual testing.
-  - **`GET /api/models`**: Exposes model accuracy and F1 benchmark data for the UI benchmark modal.
+All models were trained and benchmarked on a stratified 80% training / 20% test split of the **40,432-row e-commerce review dataset**:
+
+| Model Architecture | Model Family | Accuracy | F1-Score | Feature Matrix Used | Inference Time |
+| :--- | :---: | :---: | :---: | :--- | :---: |
+| **BiLSTM (Bidirectional LSTM)** | **Deep Learning** | **96.40%** | **96.38%** | Word Embeddings (128d) + Spatial Dropout + Dense | **< 0.02s** |
+| **Linear SVM (LinearSVC)** | **Machine Learning** | **95.70%** | **95.68%** | TF-IDF Word (15k) + Char (10k) + 7 Scaled Meta | **< 0.01s** |
+| **Logistic Regression** | **Machine Learning** | **94.95%** | **94.93%** | TF-IDF Word (15k) + Char (10k) + 7 Scaled Meta | **< 0.01s** |
+| **Multinomial Naive Bayes** | **Machine Learning** | **90.96%** | **90.96%** | TF-IDF Word Matrix (1-2 N-Grams) | **< 0.01s** |
 
 ---
 
-### 2. `model.py` — Machine Learning Engine & Feature Extractor
-- **Role**: Brain of the application containing model definitions, feature engineering pipelines, and classification logic.
-- **When It Works**: On server boot (to load/train model `.pkl` files) and whenever an API request requires prediction.
-- **Key Components**:
-  - **Text Preprocessing (`preprocess_text`)**: Converts text to lowercase, strips URLs, HTML tags, special characters, and extra spaces.
-  - **Metadata Extraction (`extract_metadata_features`)**: Computes quantitative indicators:
-    - Review character length & word count
-    - Exclamation mark count (`!`)
-    - Uppercase character ratio & uppercase word count
-    - Unique word ratio (vocabulary diversity measure)
-    - Star rating numeric value
-  - **Training Pipeline (`train_all`)**: Loads `fake reviews dataset.csv` (40,432 rows), splits data (80% train / 20% test), extracts TF-IDF word (1-2 n-grams) + character (2-4 n-grams) stacked with `StandardScaler` metadata, trains 3 models, and persists weights into `saved_models/`.
-  - **Prediction Method (`predict_single_review`)**:
-    - **Linear SVM**: Calculates `decision_function` distance transformed via sigmoid into confidence scores.
-    - **Logistic Regression**: Calculates `predict_proba` log-odds probabilities.
-    - **Naive Bayes**: Calculates `predict_proba` word likelihood posteriors.
-    - Flags suspicious patterns (*Excessive Capitalization*, *Repeated Exclamations*, *Repetitive Vocabulary*, *Generic Promotional Phrases*).
+## 🧮 Mathematical & Algorithmic Foundations
+
+### 1. Hybrid TF-IDF Feature Vectorization
+$$\text{TF-IDF}(t, d, D) = \text{TF}(t, d) \times \left[ \log\left(\frac{1 + |D|}{1 + |\{d \in D : t \in d\}|}\right) + 1 \right]$$
+
+### 2. StandardScaler Z-Score Metadata Normalization
+Seven quantitative behavioral features (character length, word count, average word length, exclamation count, uppercase ratio, unique word ratio, and star rating) are standardized:
+$$z = \frac{x - \mu}{\sigma} \quad \text{where } \mu = \frac{1}{N}\sum_{i=1}^{N} x_i, \quad \sigma = \sqrt{\frac{1}{N}\sum_{i=1}^{N} (x_i - \mu)^2}$$
+
+### 3. Linear SVM Maximum-Margin Hyperplane
+$$\min_{w,b} \frac{1}{2} \|w\|^2 + C \sum_{i=1}^N \max(0, 1 - y_i(w^T x_i + b)) \quad \Longrightarrow \quad P(\text{Fake} \mid X) = \frac{1}{1 + e^{-1.2 \cdot (w^T X + b)}}$$
+
+### 4. PyTorch Bi-directional LSTM Gated Equations
+$$\begin{aligned}
+f_t &= \sigma(W_f \cdot [h_{t-1}, x_t] + b_f) \quad \text{[Forget Gate]} \\
+i_t &= \sigma(W_i \cdot [h_{t-1}, x_t] + b_i) \quad \text{[Input Gate]} \\
+\tilde{C}_t &= \tanh(W_c \cdot [h_{t-1}, x_t] + b_c) \quad \text{[Candidate State]} \\
+C_t &= f_t \odot C_{t-1} + i_t \odot \tilde{C}_t \quad \text{[Cell State Update]} \\
+o_t &= \sigma(W_o \cdot [h_{t-1}, x_t] + b_o) \quad \text{[Output Gate]} \\
+h_t &= o_t \odot \tanh(C_t) \quad \text{[Hidden Output State]} \\
+h_{\text{BiLSTM}} &= [h_{\text{forward}} \, ; \, h_{\text{backward}}] \\
+P(\text{Fake} \mid X) &= \sigma(W_2 \cdot \text{ReLU}(W_1 \cdot \text{MeanPool}(h_{\text{BiLSTM}})))
+\end{aligned}$$
 
 ---
 
-### 3. `scraper.py` — Live Data Fetcher & Scraper Integration
-- **Role**: Fetches real Flipkart customer reviews using the **Parse.bot API** or falls back to category-tailored real buyer datasets.
-- **When It Works**: Triggered whenever `POST /api/analyze-url` is called with a Flipkart URL.
-- **Key Responsibilities**:
-  - **`fetch_parse_bot_reviews(url, max_pages=3)`**: Calls Parse.bot API endpoint (`https://api.parse.bot/scraper/dfeb72c1-9b76-4102-a752-70e10f3a0c50/get_reviews`) with API Key `pmx_8710d4aed4fd4212946e4011f208bea8`. Iterates through pages 1 to 3 to retrieve **30 live Flipkart reviews**.
-  - **`extract_product_name_from_url(url)`**: Extracts clean product titles from Flipkart URL slugs (e.g. "Samsung Bespoke AI 2026 AC", "Motorola G35 5G").
-  - **`detect_category_from_url(url)`**: Categorizes products into Laptops, Smartphones, ACs, Audio, or Footwear.
-  - **`generate_category_tailored_reviews`**: Fallback module providing genuine buyer profiles (`Thomas Gowda`, `Kausar Damani`, `Akshay Yadav`, `Manas Ranjan`) if live API connections are unreachable.
+## 📷 Visual Interface & Testing Evidence
+
+| Dashboard Landing Screen | Single Review Suspicion Test |
+| :---: | :---: |
+| ![Landing Screen](docs/report_images/fig_4_1_dashboard_landing.png) | ![Single Test](docs/report_images/fig_4_2_single_review_test.png) |
+| *Multi-tab input interface with quick sample loaders* | *Fake review detected with 3 suspicion flags* |
+
+| Live Flipkart Product Bulk Analysis | Model Benchmark Modal |
+| :---: | :---: |
+| ![Bulk Analysis](docs/report_images/fig_4_3_bulk_analysis_dashboard.png) | ![Benchmark Modal](docs/report_images/fig_4_4_benchmark_modal.png) |
+| *Samsung AC reviews verified with 100% Trust Index* | *Live model accuracy and F1 benchmark comparison* |
 
 ---
 
-### 4. `templates/index.html` — User Interface Template
-- **Role**: Single Page Application (SPA) HTML layout.
-- **When It Works**: Loaded in the user's browser when navigating to `http://127.0.0.1:5050`.
-- **Key Elements**:
-  - **Header**: Active model selector dropdown and **Model Performance Benchmark** modal trigger.
-  - **Input Card**: 3 Interactive Tabs:
-    1. *Paste Real Flipkart Reviews* (with a "Load Samsung AC Reviews Sample" preset button).
-    2. *Flipkart Product Link Inspector* (with quick preset pills for Samsung AC, Motorola Phone, ASUS Laptop, BoAt Headphones).
-    3. *Single Review Tester* (with interactive star rating slider).
-  - **Dashboard Display**: SVG **Trust Index Score Ring**, 4 Stat Cards, Chart.js Pie & Bar charts, and filtered **Analyzed Review Feed**.
+## 📂 Repository Structure
+
+```text
+Fake-Product-Review-Detection-System/
+├── app.py                      # Flask REST Server & Application Controller
+├── model.py                    # PyTorch BiLSTM & Scikit-Learn Feature Extraction Pipeline
+├── scraper.py                  # Parse.bot Flipkart Scraper & URL Caching Gateway
+├── fake reviews dataset.csv    # 40,432 Labeled Training Dataset (CG vs OR)
+├── requirements.txt            # Python Dependencies (Flask, PyTorch, Scikit-Learn, etc.)
+├── README.md                   # Comprehensive Project Documentation (This File)
+├── templates/
+│   └── index.html              # Responsive Glassmorphic Single-Page Application Layout
+├── static/
+│   ├── css/
+│   │   └── style.css           # Glassmorphism Modern Dark-Theme Design System
+│   └── js/
+│       └── main.js             # Async REST Client, DOM Controller & Chart.js Visualizations
+├── saved_models/               # Serialized Models & Feature Transformers
+│   ├── Linear_SVM.pkl          # Trained Linear Support Vector Classifier (95.70%)
+│   ├── Logistic_Regression.pkl # Trained Logistic Regression Classifier (94.95%)
+│   ├── Naive_Bayes.pkl         # Trained Multinomial Naive Bayes Classifier (90.96%)
+│   ├── tfidf_word.pkl          # 15,000 Word N-Gram TF-IDF Vectorizer
+│   ├── tfidf_char.pkl          # 10,000 Character N-Gram TF-IDF Vectorizer
+│   ├── scaler.pkl              # StandardScaler for Review Metadata Attributes
+│   └── metrics.pkl             # Serialized Accuracy and F1 Benchmark Data
+└── docs/                       # Project Documentation & Academic Report
+    ├── MARWADI_UNIVERSITY_PROJECT_REPORT.docx  # 50-Page Academic Project Report
+    ├── generate_comprehensive_50page_report.py # Report Generation Pipeline
+    ├── generate_flowchart_images.py            # High-Resolution Flowchart Generator
+    ├── generate_formula_images.py              # LaTeX Formula Image Renderer
+    └── report_images/          # 300 DPI Architectural Diagrams & UI Screenshots
+```
 
 ---
 
-### 5. `static/js/main.js` — Frontend Application Logic
-- **Role**: Async client handling user events, API network calls, and UI state rendering.
-- **When It Works**: Listens for user interactions in the web browser.
-- **Key Tasks**:
-  - Manages tab switching and pre-populates sample data.
-  - Sends `fetch()` POST requests to `/api/analyze-url`, `/api/analyze-bulk`, and `/api/analyze-text`.
-  - Re-evaluates predictions automatically when the user selects a different model in the top dropdown.
-  - Renders dynamic Chart.js **Authenticity Distribution Doughnut Chart** and **Rating vs Authenticity Bar Chart**.
-  - Populates review cards with color-coded badges (`REAL REVIEW` / `FAKE REVIEW`), confidence percentages, and flag warnings.
+## ⚡ Installation & Quickstart Guide
+
+### Prerequisites
+* **Python 3.9 or higher** (Python 3.11 recommended)
+* **Git** installed on your operating system
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/Jaykishan-0077/Fake-Product-Review-Detection-System.git
+cd Fake-Product-Review-Detection-System
+```
+
+### 2. Create and Activate a Virtual Environment
+```bash
+# On macOS / Linux:
+python3 -m venv venv
+source venv/bin/activate
+
+# On Windows:
+python -m venv venv
+venv\Scripts\activate
+```
+
+### 3. Install Dependencies
+```bash
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 4. (Optional) Set Parse.bot Scraping API Key
+The scraper includes a pre-configured key and fallback review generator. To set your own API key:
+```bash
+# On macOS / Linux:
+export PARSE_BOT_API_KEY="your_api_key_here"
+
+# On Windows (Command Prompt):
+set PARSE_BOT_API_KEY="your_api_key_here"
+
+# On Windows (PowerShell):
+$env:PARSE_BOT_API_KEY="your_api_key_here"
+```
+
+### 5. Launch the Application
+```bash
+python3 app.py
+```
+
+### 6. Access the Dashboard
+Open your web browser and navigate to:
+👉 **`http://localhost:5050`** (or `http://127.0.0.1:5050`)
 
 ---
 
-### 6. `static/css/style.css` — Modern UI Design System
-- **Role**: Controls visual aesthetic using modern Glassmorphism aesthetics.
-- **Key Features**:
-  - Dark mode color palette using HSL CSS variables.
-  - Animated CSS background glow blobs (`.blob-1`, `.blob-2`, `.blob-3`).
-  - SVG animated Trust Index progress ring.
-  - Fully responsive grid layout for mobile, tablet, and desktop viewports.
+## 🔌 REST API Specification
+
+| Endpoint | Method | Input Parameters | Output Response | Description |
+| :--- | :---: | :--- | :--- | :--- |
+| **`/api/analyze-url`** | `POST` | `{"url": "https://flipkart.com/...", "model": "Linear SVM"}` | `{"product_name": "...", "trust_score": 92.3, "reviews": [...]}` | Scrapes live reviews from Flipkart URL and performs batch evaluation. |
+| **`/api/analyze-bulk`** | `POST` | `{"text": "Review paragraph 1\nReview paragraph 2", "model": "Linear SVM"}` | `{"trust_score": 100.0, "total_analyzed": 2, "reviews": [...]}` | Evaluates pasted blocks of multi-line review text. |
+| **`/api/analyze-text`** | `POST` | `{"text": "Sample review text", "rating": 5, "model": "Linear SVM"}` | `{"prediction": "REAL", "confidence": 97.8, "flags": []}` | Classifies a single manually typed review text. |
+| **`/api/models`** | `GET` | *None* | `{"Linear SVM": {"accuracy": 95.70, "f1": 95.68}, ...}` | Returns benchmark metrics for all trained models. |
+| **`/ping`** | `GET` | *None* | `{"status": "active"}` | Health-check endpoint for automated keep-alive monitors. |
 
 ---
 
-### 7. `fake reviews dataset.csv` — Training Data Source
-- **Role**: Ground-truth dataset containing 40,432 labelled review texts (`CG` = Computer Generated Fake, `OR` = Original Real) across multiple e-commerce categories.
-- **Used By**: `model.py` during `train_all()` execution to fit vectorizers and train classification algorithms.
+## 📖 Academic Report & Research Context
+
+This project was developed as **Major Project – I (01CE0716)** for the degree of **Bachelor of Technology in Computer Engineering** at **Marwadi University, Rajkot**.
+
+* The complete, formal 50-page university project report is available at:  
+  👉 [`docs/MARWADI_UNIVERSITY_PROJECT_REPORT.docx`](docs/MARWADI_UNIVERSITY_PROJECT_REPORT.docx)
+* Formatted strictly in accordance with institutional guidelines: **Times New Roman**, **1.5 line spacing**, **1.25" binding margins**, LaTeX formula cards, and 18 executed validation test cases (**TC-01 to TC-18**).
 
 ---
 
-## 🏆 Model Performance Benchmark Summary
+## 👥 Authors & Acknowledgements
 
-| Model Architecture | Accuracy Score | F1 Score | Feature Set Used |
-| :--- | :---: | :---: | :--- |
-| **Linear SVM** | **95.71%** | **95.70%** | TF-IDF Word + Char N-Grams + Scaled Metadata |
-| **Logistic Regression** | **94.99%** | **94.97%** | TF-IDF Word + Char N-Grams + Scaled Metadata |
-| **Multinomial Naive Bayes** | **90.96%** | **90.96%** | TF-IDF Word Matrix |
-
----
-
-## ⚡ How to Run the Project from your Desktop
-
-1. **Open Terminal** and navigate to your Desktop project directory:
-   ```bash
-   cd ~/Desktop/flipkart_fake_review_detector
-   ```
-
-2. **Start the Flask Web Server**:
-   ```bash
-   python3 app.py
-   ```
-
-3. **Open Browser** and navigate to:
-   👉 **`http://127.0.0.1:5050`**
+* **Jaykishan Kalariya** — Enrollment No: `92301703102` *(Project Lead, Machine Learning & Deep Learning Engineer)*
+* **Maan Kalariya** — Enrollment No: `92301703111` *(System Analyst, Full-Stack & UI/UX Developer)*
+* **Internal Guide**: **Prof. Charmi Vora**, Assistant Professor, Department of Computer Engineering
+* **Department Head**: **Prof. (Dr.) Krunal Vaghela**, Associate Dean & Head, Department of Computer Engineering
+* **Institution**: **Faculty of Engineering & Technology, Marwadi University, Rajkot**
