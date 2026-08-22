@@ -63,7 +63,7 @@ TrustGuard follows a modular **3-Tier Model-View-Controller (MVC)** architectura
 │ 2. APPLICATION TIER (Controller)                                            │
 │    • Flask REST API Server (`app.py`)                                       │
 │    • URL Domain & Path Validator (`flipkart.com`, `/p/`, `pid=`)            │
-│    • In-Memory `URL_CACHE` Hash Table (Zero Credit Waste on Duplicates)    │
+│    • In-Memory `URL_CACHE` Hash Table (Zero Credit Waste on Duplicates)     │
 │    • Live Scraping Gateway (`scraper.py`) via Parse.bot API                 │
 │    • Feature Engineering & Inference Engine (`model.py`)                    │
 └──────────────────────────────────────┬──────────────────────────────────────┘
@@ -71,7 +71,7 @@ TrustGuard follows a modular **3-Tier Model-View-Controller (MVC)** architectura
                                        ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ 3. DATA & MODEL TIER (Model Storage)                                        │
-│    • 40,432 Kaggle Labeled Dataset (`CG` Computer-Generated vs `OR` Real)  │
+│    • 40,432 Kaggle Labeled Dataset (`CG` Computer-Generated vs `OR` Real)   │
 │    • Serialized Scikit-Learn Classifiers (`Linear_SVM.pkl`, `LogReg.pkl`)   │
 │    • PyTorch Deep Learning BiLSTM Architecture (`BiLSTMClassifier`)         │
 │    • Vectorizers: 15,000 Word N-Grams + 10,000 Char N-Grams + StandardScaler│
